@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#17463a">
+<meta name="description" content="Plateforme de gestion scolaire : calcul des moyennes, bulletins et suivi des résultats des élèves.">
+<title>Klasora — Gestion scolaire</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317463a'/%3E%3Cpath d='M20 14v36M20 33l22-19M26 28l18 22' stroke='%23f2b705' stroke-width='7' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="side">
+    <div class="brand"><span class="mark">K</span><div><strong>Klasora</strong><small id="schoolName"></small></div></div>
+    <nav id="nav"></nav>
+    <p class="side-note">Données enregistrées dans ce navigateur. Pensez à exporter une sauvegarde (Paramètres).</p>
+  </aside>
+  <main id="main" tabindex="-1"></main>
+</div>
+<dialog id="dlg"></dialog>
+<input type="file" id="fileCsv" accept=".csv,text/csv" hidden>
+<input type="file" id="fileJson" accept=".json,application/json" hidden>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="print-area"></div>
+<script src="js/app.js"></script>
+</body>
+</html>
