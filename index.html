@@ -2,21 +2,405 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#17463a">
+<meta name="referrer" content="no-referrer">
 <meta name="description" content="Plateforme de gestion scolaire : calcul des moyennes, bulletins et suivi des résultats des élèves.">
 <title>Klasora — Gestion scolaire</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317463a'/%3E%3Cpath d='M20 14v36M20 33l22-19M26 28l18 22' stroke='%23f2b705' stroke-width='7' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css">
+<style>:root{
+  --chalk:#17463a; --chalk-2:#0f332a; --paper:#f3f5f7; --card:#fff; --ink:#17212b; --muted:#5d6b78;
+  --line:#dde3e8; --pencil:#f2b705; --red:#c8372d; --ok:#1b7a4f; --blue:#2c5fa8;
+  --f-display:'Bricolage Grotesque','Trebuchet MS',system-ui,sans-serif;
+  --f-body:'Source Sans 3','Segoe UI',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{--paper:#11181d; --card:#1a232a; --ink:#e8edf0; --muted:#9aa8b3; --line:#2c3943; --chalk:#0f332a; --chalk-2:#0a241d}
+}
+*{box-sizing:border-box}
+html{font-family:var(--f-body);color:var(--ink);background:var(--paper);font-size:16px}
+body{margin:0;min-height:100vh}
+h1,h2,h3{font-family:var(--f-display);margin:0;letter-spacing:-.01em}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--pencil);outline-offset:2px}
+.shell{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.side{background:var(--chalk);color:#e9f1ee;padding:22px 16px;display:flex;flex-direction:column;gap:20px;position:sticky;top:0;height:100vh}
+.brand{display:flex;gap:12px;align-items:center}
+.brand .mark{width:42px;height:42px;border-radius:12px;background:var(--pencil);color:var(--chalk-2);display:grid;place-items:center;font:700 24px var(--f-display)}
+.brand strong{font:700 20px var(--f-display);display:block}
+.brand small{opacity:.75;font-size:13px;display:block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#nav{display:flex;flex-direction:column;gap:4px}
+#nav button{background:none;border:0;color:inherit;text-align:left;padding:10px 12px;border-radius:8px;cursor:pointer;font-weight:600}
+#nav button:hover{background:rgba(255,255,255,.08)}
+#nav button[aria-current=page]{background:#fff;color:var(--chalk-2)}
+.side-note{margin-top:auto;font-size:13px;opacity:.7;line-height:1.4}
+main{padding:28px 32px 60px;max-width:1180px;width:100%}
+.head{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:22px}
+.head h1{font-size:30px}
+.head p{margin:4px 0 0;color:var(--muted)}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.bar label{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+select,input,textarea{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:40px}
+button.primary,button.ghost,button.danger{border-radius:8px;padding:9px 14px;cursor:pointer;font-weight:600;min-height:40px;border:1px solid transparent}
+button.primary{background:var(--chalk);color:#fff}
+button.primary:hover{background:var(--chalk-2)}
+button.ghost{background:var(--card);border-color:var(--line)}
+button.ghost:hover{border-color:var(--muted)}
+button.danger{background:none;color:var(--red);border-color:var(--line)}
+button.mini{min-height:32px;padding:4px 10px;font-size:14px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:22px}
+.panel>h2{font-size:18px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:14px;color:var(--muted);font-weight:600;background:color-mix(in srgb,var(--paper) 60%,var(--card))}
+tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+td.acts{text-align:right}
+td.acts button{margin-left:6px}
+.low{color:var(--red);font-weight:600}
+.good{color:var(--ok);font-weight:600}
+.empty{padding:36px 20px;text-align:center;color:var(--muted)}
+.empty strong{display:block;color:var(--ink);font:700 18px var(--f-display);margin-bottom:6px}
+.empty .row{justify-content:center;margin-top:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row.end{justify-content:flex-end}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:22px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.stat b{font:700 30px var(--f-display);display:block}
+.stat span{color:var(--muted);font-size:14px}
+.stat.hero{background:var(--chalk);color:#fff;border-color:var(--chalk)}
+.stat.hero span{color:#cfe0da}
+.stat.hero b{color:var(--pencil)}
+.grade{width:76px;text-align:right;font-variant-numeric:tabular-nums}
+.grade.bad{border-color:var(--red);background:color-mix(in srgb,var(--red) 10%,var(--card))}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:13px;font-weight:600;background:color-mix(in srgb,var(--blue) 14%,transparent);color:var(--blue)}
+.pill.ko{background:color-mix(in srgb,var(--red) 14%,transparent);color:var(--red)}
+.pill.ok{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+.hint{color:var(--muted);font-size:14px;margin:0 0 14px}
+form.set{padding:18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+form.set label,.dform label{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+form.set .full{grid-column:1/-1}
+dialog{border:1px solid var(--line);border-radius:14px;padding:0;background:var(--card);color:var(--ink);width:min(440px,92vw)}
+dialog::backdrop{background:rgba(10,20,25,.55)}
+.dform{padding:20px;display:flex;flex-direction:column;gap:14px}
+.dform h3{font-size:20px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:10px;opacity:0;pointer-events:none;transition:.2s;z-index:50}
+#toast.on{opacity:1;transform:translateX(-50%)}
+.bars{padding:16px 18px;display:grid;gap:10px}
+.bars div{display:grid;grid-template-columns:110px 1fr 54px;gap:10px;align-items:center;font-size:14px}
+.bars i{display:block;height:14px;border-radius:4px;background:var(--chalk)}
+.bars i.red{background:var(--red)}
+.bars .track{background:color-mix(in srgb,var(--line) 70%,transparent);border-radius:4px}
+
+/* Bulletin */
+#print-area{display:none}
+.sheet{background:#fff;color:#111;font-family:var(--f-body);padding:14mm 12mm;width:210mm;min-height:297mm;margin:0 auto;page-break-after:always}
+.sheet:last-child{page-break-after:auto}
+.sheet header{display:flex;justify-content:space-between;gap:16px;border-bottom:3px solid #17463a;padding-bottom:10px;margin-bottom:14px}
+.sheet h1{font-size:22px;color:#17463a}
+.sheet .meta{font-size:13px;line-height:1.5}
+.sheet h2{font-size:17px;text-align:center;margin:6px 0 12px;text-transform:uppercase;letter-spacing:.04em}
+.sheet .who{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;font-size:14px;margin-bottom:12px}
+.sheet table{font-size:13px}
+.sheet th,.sheet td{border:1px solid #9aa5ad;padding:5px 7px;color:#111;background:none}
+.sheet th{background:#e8efec;font-weight:600}
+.sheet .red{color:#c8372d;font-weight:700}
+.sheet .total td{font-weight:700;background:#f2f5f4}
+.sheet .sum{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+.sheet .sum div{border:2px solid #17463a;border-radius:8px;padding:8px;text-align:center;font-size:13px}
+.sheet .sum b{display:block;font:700 20px var(--f-display);color:#17463a}
+.sheet .obs{border:1px solid #9aa5ad;min-height:60px;padding:8px;font-size:13px;margin-bottom:14px}
+.sheet .sign{display:flex;justify-content:space-between;font-size:13px;margin-top:20px}
+.sheet.land{width:297mm;min-height:210mm;page:land}
+.sheet.land table{font-size:10.5px}
+.sheet.land th,.sheet.land td{padding:3px 4px}
+.sheet td.l{text-align:left}
+.sheet table.notes td,.sheet table.notes th{text-align:center}
+.sheet table.notes td:first-child{text-align:left}
+.sheet .sum.two{grid-template-columns:repeat(2,1fr)}
+.sheet .rt{font-size:15px;margin:14px 0 6px;color:#17463a}
+.sheet table.recap td,.sheet table.recap th{text-align:center}
+.sheet table.recap td.l{text-align:left}
+@page land{size:A4 landscape;margin:0}
+.preview-wrap{background:color-mix(in srgb,var(--line) 60%,var(--paper));padding:14px;border-radius:12px;overflow-x:auto}
+.preview-wrap .sheet{box-shadow:0 2px 12px rgba(0,0,0,.15);min-height:0;margin:0 auto 14px}
+
+@media (max-width:820px){
+  .preview-wrap .sheet{zoom:.45}
+  .shell{grid-template-columns:1fr}
+  .side{position:static;height:auto;padding:12px 14px;gap:10px}
+  .side-note{display:none}
+  #nav{flex-direction:row;overflow-x:auto;padding-bottom:4px}
+  #nav button{white-space:nowrap}
+  main{padding:18px 14px 50px}
+  .head h1{font-size:24px}
+}
+@media print{
+  @page{size:A4;margin:0}
+  body>*:not(#print-area){display:none!important}
+  #print-area{display:block!important}
+  .sheet{box-shadow:none;margin:0;width:auto}
+  html,body{background:#fff}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+#export-area{position:fixed;left:-10000px;top:0;display:block}
+#export-area .sheet{margin:0;box-shadow:none}
+
+/* ===== Interface dynamique : fond moderne, verre dépoli, animations ===== */
+:root{--bg1:#eaf1ee;--glass:color-mix(in srgb,var(--card) 80%,transparent);--glass-line:color-mix(in srgb,var(--line) 70%,#fff 30%);--shadow:0 10px 30px rgba(15,51,42,.08)}
+@media (prefers-color-scheme:dark){:root{--bg1:#0b1316;--glass:color-mix(in srgb,var(--card) 72%,transparent);--shadow:0 10px 30px rgba(0,0,0,.35)}}
+html{background:var(--bg1)}
+body{background:transparent}
+.bg{position:fixed;inset:0;z-index:-1;overflow:hidden;background:var(--bg1)}
+.bg i{position:absolute;border-radius:50%;filter:blur(80px);opacity:.5;will-change:transform;animation:drift 24s ease-in-out infinite alternate}
+.bg i:nth-child(1){width:52vmax;height:52vmax;background:#3fb88a;left:-14vmax;top:-18vmax}
+.bg i:nth-child(2){width:40vmax;height:40vmax;background:#f6c945;right:-10vmax;top:8vh;animation-duration:30s;animation-delay:-8s}
+.bg i:nth-child(3){width:48vmax;height:48vmax;background:#6a9be0;left:28vw;bottom:-26vmax;animation-duration:36s;animation-delay:-14s}
+.bg::after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(23,70,58,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(23,70,58,.07) 1px,transparent 1px);background-size:46px 46px;-webkit-mask-image:radial-gradient(ellipse at 30% 20%,#000 0,transparent 75%);mask-image:radial-gradient(ellipse at 30% 20%,#000 0,transparent 75%)}
+@media (prefers-color-scheme:dark){.bg i{opacity:.22}.bg::after{background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px)}}
+@keyframes drift{0%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(6vmax,4vmax,0) scale(1.08)}100%{transform:translate3d(-4vmax,8vmax,0) scale(.95)}}
+.shell{position:relative;z-index:0}
+.side{background:linear-gradient(180deg,var(--chalk) 0%,var(--chalk-2) 100%);box-shadow:6px 0 30px rgba(15,51,42,.18)}
+#nav button{display:flex;align-items:center;gap:11px;transition:background .2s,transform .2s}
+#nav button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#nav button:hover{transform:translateX(3px)}
+#nav button[aria-current=page]{box-shadow:0 6px 16px rgba(0,0,0,.2)}
+.panel,.stat,dialog{background:var(--glass);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);border-color:var(--glass-line);box-shadow:var(--shadow)}
+.stat,.panel{transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+.stat:hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(15,51,42,.14)}
+.stat.hero-stat{background:linear-gradient(135deg,var(--chalk),#1f7a60);color:#fff;border-color:transparent}
+.stat.hero-stat span{color:#d4e7e0}
+.stat.hero-stat b{color:var(--pencil)}
+.stat b{font-variant-numeric:tabular-nums}
+button.primary,button.ghost{transition:transform .15s,box-shadow .2s,background .2s,border-color .2s}
+button.primary:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(23,70,58,.28)}
+button.ghost:hover{transform:translateY(-1px)}
+button:active{transform:scale(.97)!important}
+tbody tr{transition:background .15s}
+tbody tr:hover{background:color-mix(in srgb,var(--chalk) 7%,transparent)}
+th{background:color-mix(in srgb,var(--card) 55%,transparent)}
+.head h2{font-size:22px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:22px}
+.grid2 .panel{margin-bottom:0}
+
+/* Hero du tableau de bord */
+.hero{display:grid;grid-template-columns:1.25fr 1fr;gap:24px;padding:28px;border-radius:20px;color:#fff;position:relative;overflow:hidden;margin-bottom:26px;background:linear-gradient(120deg,#0f332a 0%,#17604b 55%,#2a8f6c 100%);box-shadow:0 18px 40px rgba(15,51,42,.28)}
+.hero::before{content:"";position:absolute;width:340px;height:340px;right:-90px;top:-130px;border-radius:50%;background:radial-gradient(circle,rgba(242,183,5,.55),transparent 68%);animation:pulse 7s ease-in-out infinite alternate}
+.hero::after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.12) 1px,transparent 1.5px);background-size:22px 22px;opacity:.5;pointer-events:none}
+.hero>*{position:relative;z-index:1}
+.hero h1{font-size:32px;line-height:1.15;margin:6px 0 8px}
+.hero p{margin:0 0 18px;color:#d4e7e0;max-width:46ch}
+.eyebrow{display:block;text-transform:capitalize;font-size:14px;opacity:.85;letter-spacing:.02em}
+.on-dark.primary{background:var(--pencil);color:#0f332a}
+.on-dark.primary:hover{background:#ffcb1f}
+.on-dark.ghost{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.35)}
+.on-dark.ghost:hover{background:rgba(255,255,255,.2)}
+@keyframes pulse{from{transform:scale(1);opacity:.7}to{transform:scale(1.25);opacity:1}}
+.steps{display:grid;gap:8px}
+.step{display:flex;align-items:center;gap:12px;text-align:left;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:12px;padding:10px 14px;cursor:pointer;font-weight:600;transition:background .2s,transform .2s}
+.step:hover{background:rgba(255,255,255,.2);transform:translateX(4px)}
+.tick{width:24px;height:24px;border-radius:50%;border:2px solid rgba(255,255,255,.5);display:grid;place-items:center;flex:none;transition:.3s}
+.tick svg{width:16px;height:16px;fill:none;stroke:#0f332a;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;opacity:0;stroke-dasharray:20;stroke-dashoffset:20}
+.step.done .tick{background:var(--pencil);border-color:var(--pencil)}
+.step.done .tick svg{opacity:1;animation:draw .5s .35s ease forwards}
+.step.done{background:rgba(255,255,255,.16)}
+@keyframes draw{to{stroke-dashoffset:0}}
+
+/* Anneau de taux de réussite et barres animées */
+.ringstat{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.ring{position:relative;width:74px;height:74px}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:8}
+.ring .rg-bg{stroke:color-mix(in srgb,var(--line) 80%,transparent)}
+.ring .rg{stroke:var(--ok);stroke-linecap:round;animation:ring 1.2s cubic-bezier(.2,.8,.2,1) both}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font:700 16px var(--f-display)}
+.ringstat .ring b{font-size:15px}
+@keyframes ring{from{stroke-dashoffset:var(--c)}}
+.bars i{transform-origin:left;animation:grow 1s cubic-bezier(.2,.8,.2,1) both}
+@keyframes grow{from{transform:scaleX(0)}}
+
+/* Apparition en cascade à chaque changement d'écran */
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+main.enter>*{animation:rise .6s cubic-bezier(.2,.8,.2,1) both}
+main.enter>*:nth-child(2){animation-delay:.07s}
+main.enter>*:nth-child(3){animation-delay:.14s}
+main.enter>*:nth-child(4){animation-delay:.21s}
+main.enter>*:nth-child(5){animation-delay:.28s}
+main.enter>*:nth-child(6){animation-delay:.35s}
+main.enter>*:nth-child(7){animation-delay:.42s}
+@media (max-width:820px){
+  .hero{grid-template-columns:1fr;padding:22px}
+  .hero h1{font-size:26px}
+  .grid2{grid-template-columns:1fr}
+  #nav button:hover{transform:none}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.stat b span{font-size:inherit;color:inherit}
+.eyebrow{text-transform:none}
+.eyebrow::first-letter{text-transform:uppercase}
+main,.hero>*{min-width:0}
+.hero h1{overflow-wrap:anywhere}
+@media (max-width:820px){.shell{grid-template-columns:minmax(0,1fr)}.hero{grid-template-columns:minmax(0,1fr)}}
+.stat b span,.stat.hero-stat b span{color:inherit}
+@media (prefers-color-scheme:dark){.bars i{background:#3fb88a}.bars i.red{background:#e0584d}}
+
+/* ===== Accès, notifications, administrateur ===== */
+[hidden]{display:none!important}
+body.locked .shell{display:none}
+body.k-noscroll{overflow:hidden}
+.ava{width:38px;height:38px;border-radius:50%;background:var(--pencil);color:var(--chalk-2);display:grid;place-items:center;font:700 17px var(--f-display);flex:none}
+.ava.sm{width:34px;height:34px;font-size:15px}
+.k-glass{background:color-mix(in srgb,var(--card) 84%,transparent);backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3);border:1px solid color-mix(in srgb,var(--line) 70%,transparent);box-shadow:0 22px 60px rgba(8,30,24,.22)}
+.k-auth{position:fixed;inset:0;display:grid;place-items:center;padding:20px;overflow:auto;z-index:30}
+.k-card{width:min(460px,100%);border-radius:20px;padding:26px 26px 22px}
+.k-auth.fresh .k-card{animation:kCard .55s cubic-bezier(.2,.8,.2,1) both}
+@keyframes kCard{from{opacity:0;transform:translateY(20px) scale(.97)}}
+.k-center{text-align:center}
+.k-center h2{font-size:24px;margin:8px 0 6px}
+.k-brand{display:flex;gap:12px;align-items:center}
+.k-brand .mark{width:44px;height:44px;border-radius:12px;background:var(--chalk);color:var(--pencil);display:grid;place-items:center;font:700 24px var(--f-display)}
+.k-brand strong{font:700 21px var(--f-display);display:block}
+.k-brand small{color:var(--muted)}
+.k-mode{display:flex;gap:10px;margin-top:14px;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--pencil) 20%,transparent);font-size:13.5px;line-height:1.4}
+.k-mode svg{flex:none;margin-top:2px}
+.k-seg{position:relative;display:grid;grid-template-columns:1fr 1fr;background:color-mix(in srgb,var(--line) 55%,transparent);border-radius:12px;padding:4px;margin:16px 0 12px}
+.k-seg i{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);background:var(--card);border-radius:9px;box-shadow:0 2px 8px rgba(0,0,0,.14);transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.k-seg[data-pos="1"] i{transform:translateX(100%)}
+.k-seg button{position:relative;z-index:1;background:none;border:0;padding:10px;font-weight:600;cursor:pointer;color:var(--muted);transition:color .2s}
+.k-seg button[aria-selected=true]{color:var(--ink)}
+.k-lead{color:var(--muted);margin:0 0 14px;line-height:1.45}
+.k-lead.small{font-size:14px;margin:10px 0 0}
+.k-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.k-chips button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);cursor:pointer;font-size:14px;font-weight:600;transition:transform .15s,border-color .2s,background .2s}
+.k-chips button:hover{transform:translateY(-2px);border-color:var(--muted)}
+.k-chips button.on{border-color:var(--chalk);background:color-mix(in srgb,var(--chalk) 10%,var(--card));color:var(--chalk)}
+@media (prefers-color-scheme:dark){.k-chips button.on{color:#7fd2b3;border-color:#3fb88a}}
+.k-pane{animation:kPane .35s cubic-bezier(.2,.8,.2,1) both}
+@keyframes kPane{from{opacity:0;transform:translateY(8px)}}
+.k-field{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;font-size:14px;color:var(--muted)}
+.k-field>span{font-weight:600}
+.k-in{position:relative}
+.k-in input,.k-field>input{width:100%;min-height:44px}
+.k-in:has(.k-eye) input{padding-right:86px}
+.k-eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--blue);font-size:13px;font-weight:600;cursor:pointer;padding:6px}
+.k-hint{font-style:normal;font-size:12.5px;min-height:16px;color:var(--muted)}
+.k-field.bad input{border-color:var(--red)}.k-field.bad .k-hint{color:var(--red)}
+.k-field.ok input{border-color:var(--ok)}
+.k-otp{text-align:center;letter-spacing:.5em;font:700 24px var(--f-display)!important;text-indent:.5em}
+.k-wide{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;margin-top:4px}
+.k-row{display:flex;justify-content:space-between;gap:10px;margin-top:12px}
+.k-link{background:none;border:0;color:var(--blue);font-weight:600;cursor:pointer;padding:6px 2px}
+.k-link:disabled{color:var(--muted);cursor:default}
+.k-alert{background:color-mix(in srgb,var(--red) 12%,var(--card));color:var(--red);border:1px solid color-mix(in srgb,var(--red) 35%,transparent);padding:10px 12px;border-radius:10px;margin-bottom:12px;font-size:14px}
+.k-alert.shake{animation:kShake .4s}
+@keyframes kShake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.k-meter{display:grid;grid-template-columns:repeat(4,1fr) auto;gap:6px;align-items:center;margin:-2px 0 12px}
+.k-meter i{height:5px;border-radius:3px;background:var(--line);transition:background .25s}
+.k-meter[data-s="1"] i:nth-child(1){background:var(--red)}
+.k-meter[data-s="2"] i:nth-child(-n+2){background:#e08a1e}
+.k-meter[data-s="3"] i:nth-child(-n+3){background:#6aa84f}
+.k-meter[data-s="4"] i:nth-child(-n+4){background:var(--ok)}
+.k-meter span{font-size:12px;color:var(--muted);min-width:64px;text-align:right}
+button.k-busy{position:relative;color:transparent!important;pointer-events:none}
+button.k-busy::after{content:'';position:absolute;inset:0;margin:auto;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.95);border-right-color:transparent;border-radius:50%;animation:kSpin .7s linear infinite}
+button.ghost.k-busy::after,button.danger.k-busy::after{border-color:var(--chalk);border-right-color:transparent}
+@keyframes kSpin{to{transform:rotate(360deg)}}
+.k-who{display:flex;gap:12px;align-items:center;justify-content:center;margin-bottom:18px;text-align:left}
+.k-who small{display:flex;align-items:center;gap:5px;color:var(--muted)}
+.k-state{position:relative;width:78px;height:78px;border-radius:50%;display:grid;place-items:center;margin:0 auto 6px}
+.k-state.wait{background:color-mix(in srgb,var(--pencil) 25%,transparent);color:#8a6500}
+.k-state.ok{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok);animation:kPop .5s cubic-bezier(.2,1.4,.4,1) both}
+.k-state.bad{background:color-mix(in srgb,var(--red) 16%,transparent);color:var(--red)}
+.k-state.lockic{background:color-mix(in srgb,var(--chalk) 14%,transparent);color:var(--chalk)}
+@keyframes kPop{from{transform:scale(.4);opacity:0}}
+.k-pulse{position:absolute;inset:0;border-radius:50%;border:2px solid var(--pencil);animation:kPulse 1.8s ease-out infinite}
+@keyframes kPulse{from{transform:scale(.8);opacity:.9}to{transform:scale(1.5);opacity:0}}
+.k-actions{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+
+/* Boîte utilisateur (menu de gauche) */
+#userBox:empty{display:none}
+.k-ubox{display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;background:rgba(255,255,255,.09)}
+.k-uinfo{min-width:0;flex:1}
+.k-uinfo b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.k-uinfo small{display:block;opacity:.7;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.k-ibtn{background:none;border:0;color:inherit;width:36px;height:36px;border-radius:9px;position:relative;cursor:pointer;display:grid;place-items:center;flex:none}
+.k-ibtn:hover{background:rgba(255,255,255,.12)}
+.k-dot{position:absolute;top:1px;right:0;min-width:17px;height:17px;border-radius:9px;background:var(--pencil);color:#17463a;font-size:11px;font-weight:700;display:grid;place-items:center;padding:0 4px;animation:kPop .4s both}
+.k-notif{position:fixed;left:14px;bottom:92px;width:min(350px,calc(100vw - 28px));max-height:60vh;overflow:auto;border-radius:16px;z-index:65;animation:kPane .25s both}
+.k-nhead{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
+.k-notif ul{list-style:none;margin:0;padding:0}
+.k-notif li{padding:12px 16px;border-bottom:1px solid var(--line)}
+.k-notif li:last-child{border-bottom:0}
+.k-notif li.unread{background:color-mix(in srgb,var(--pencil) 14%,transparent)}
+.k-notif li p{margin:3px 0;color:var(--muted);font-size:14px}
+.k-notif li small{color:var(--muted)}
+.k-empty{padding:26px 16px;text-align:center;color:var(--muted)}
+.k-empty svg{color:var(--ok)}
+.k-ntoasts{position:fixed;top:16px;right:16px;display:grid;gap:10px;z-index:95;width:min(360px,calc(100vw - 32px));pointer-events:none}
+.k-ntoast{display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--pencil);border-radius:12px;padding:12px 14px;box-shadow:0 14px 34px rgba(0,0,0,.25);animation:kSlide .45s cubic-bezier(.2,.9,.3,1) both;pointer-events:auto}
+.k-ntoast.out{opacity:0;transform:translateX(30px);transition:.4s}
+.k-ntoast p{margin:2px 0 0;font-size:14px;color:var(--muted)}
+.k-nico{width:34px;height:34px;border-radius:50%;background:var(--pencil);color:var(--chalk-2);display:grid;place-items:center;flex:none}
+@keyframes kSlide{from{opacity:0;transform:translateX(40px)}}
+
+/* Bouton flottant et espace administrateur */
+.k-fab{position:fixed;right:20px;bottom:20px;width:58px;height:58px;border-radius:50%;border:0;cursor:pointer;color:#fff;background:linear-gradient(135deg,#1f6b55,#0f332a);box-shadow:0 10px 28px rgba(8,30,24,.4);display:grid;place-items:center;z-index:60;transition:transform .2s,box-shadow .2s}
+.k-fab:hover{transform:translateY(-3px) scale(1.05);box-shadow:0 16px 34px rgba(8,30,24,.45)}
+.k-fab:active{transform:scale(.96)}
+.k-fab.k-has{animation:kRing 2s ease-in-out infinite}
+@keyframes kRing{0%,100%{box-shadow:0 10px 28px rgba(8,30,24,.4),0 0 0 0 rgba(242,183,5,.6)}50%{box-shadow:0 10px 28px rgba(8,30,24,.4),0 0 0 12px rgba(242,183,5,0)}}
+.k-fabbadge{position:absolute;top:-2px;right:-2px;min-width:22px;height:22px;border-radius:11px;background:var(--pencil);color:#17463a;font:700 12px var(--f-body);display:grid;place-items:center;padding:0 5px}
+.k-aview{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:16px;background:rgba(8,20,16,.55);backdrop-filter:blur(6px);animation:kPane .2s both}
+.k-apanel{background:var(--card);width:min(820px,100%);max-height:min(88vh,100%);overflow:auto;border-radius:20px;animation:kCard .4s cubic-bezier(.2,.8,.2,1) both}
+.k-ahead{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line)}
+.k-ahead-t{display:flex;gap:12px;align-items:center;color:var(--chalk)}
+.k-ahead h2{font-size:20px;color:var(--ink)}
+.k-ahead small{color:var(--muted)}
+.k-gate{max-width:380px;margin:0 auto;padding:30px 22px;text-align:center}
+.k-gate .k-field{text-align:left}
+.k-gate h3{font-size:22px;margin:6px 0}
+.k-atabs{display:flex;gap:4px;padding:10px 14px 0;border-bottom:1px solid var(--line);overflow-x:auto}
+.k-atabs button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 14px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
+.k-atabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--pencil)}
+.k-cnt{display:inline-block;min-width:20px;padding:0 6px;border-radius:10px;background:var(--pencil);color:#17463a;font-size:12px;line-height:20px;text-align:center}
+.k-cnt.soft{background:color-mix(in srgb,var(--line) 80%,transparent);color:var(--muted)}
+.k-abody{padding:16px 20px 22px}
+.k-search{width:100%;margin-bottom:12px}
+.k-urow{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--line);animation:kPane .3s both}
+.k-urow:last-child{border-bottom:0}
+.k-urow .k-uinfo b{font-size:15px}
+.k-urow .k-uinfo small{display:flex;align-items:center;gap:5px;opacity:1;color:var(--muted)}
+.k-uact{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.k-secform{max-width:440px}
+.k-secform h3,.k-secinfo h3{font-size:17px;margin:4px 0 12px}
+.k-secinfo{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+.k-secinfo ul{margin:0;padding-left:18px;line-height:1.7}
+.k-log{list-style:none;padding:0!important}
+@media (max-width:820px){
+  .k-ubox .k-uinfo{display:none}
+  .k-ubox{padding:4px 6px;background:none}
+  .k-notif{left:10px;right:10px;top:68px;bottom:auto;width:auto}
+  .k-urow{grid-template-columns:auto 1fr auto}
+  .k-urow .k-uact{grid-column:1/-1;justify-content:flex-start}
+  .k-card{padding:22px 18px}
+  .k-fab{right:14px;bottom:14px}
+}
+@media (prefers-reduced-motion:reduce){.k-fab.k-has{animation:none!important}}
+
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
 </head>
-<body>
+<body class="locked">
+<div class="bg" aria-hidden="true"><i></i><i></i><i></i></div>
 <div class="shell">
   <aside class="side" id="side">
     <div class="brand"><span class="mark">K</span><div><strong>Klasora</strong><small id="schoolName"></small></div></div>
     <nav id="nav"></nav>
+    <div id="userBox"></div>
     <p class="side-note">Données enregistrées dans ce navigateur. Pensez à exporter une sauvegarde (Paramètres).</p>
   </aside>
   <main id="main" tabindex="-1"></main>
@@ -26,6 +410,1221 @@
 <input type="file" id="fileJson" accept=".json,application/json" hidden>
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="print-area"></div>
-<script src="js/app.js"></script>
+<div id="export-area" aria-hidden="true"></div>
+<script>/* Configuration de l'accès.
+   - Laissez vide : mode LOCAL (démonstration, comptes stockés dans le navigateur, identité non vérifiée).
+   - Renseignez Supabase pour la vraie connexion Google / GitHub / SMS, la validation et les notifications
+     multi-appareils (voir README.md et supabase/schema.sql).
+   La clé « anon » de Supabase est publique par conception : la sécurité repose sur les règles RLS du script SQL. */
+window.KLASORA_CONFIG = {
+  supabaseUrl: '',      // ex. 'https://abcdefgh.supabase.co'
+  supabaseAnonKey: ''   // clé « anon public » du projet
+};
+</script>
+<script>(() => {
+'use strict';
+
+/* ---------- Données ---------- */
+let KEY = 'klasora-none';
+const LEGACY = 'klasora-clone-v1';
+const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $ = (s, r = document) => r.querySelector(s);
+const defaults = () => ({
+  school: { name: 'Mon établissement', year: '2026-2027', city: '', director: '', wDev: 1, wCompo: 1 },
+  classes: [], students: [], subjects: [], grades: {}, comments: {}
+});
+function load() {
+  try { const r = localStorage.getItem(KEY); return r ? Object.assign(defaults(), JSON.parse(r)) : defaults(); }
+  catch { return defaults(); }
+}
+let S = defaults();
+let ui = { view: 'dashboard', classId: '', term: '1', subjectId: '', preview: '' };
+const save = () => {
+  if (KEY === 'klasora-none') return;
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch { toast('Enregistrement impossible : stockage plein.'); }
+  try { window.KApp && window.KApp.onSave && window.KApp.onSave(S); } catch {}
+};
+
+/* ---------- Calculs pédagogiques ---------- */
+const num = v => (v === '' || v == null || isNaN(+v)) ? null : +v;
+const r2 = x => x == null ? null : Math.round(x * 100) / 100;
+const fmt = x => x == null ? '–' : r2(x).toFixed(2).replace('.', ',');
+const mean = a => a.length ? a.reduce((p, c) => p + c, 0) / a.length : null;
+
+/* Classes du primaire (CP1, CP2, CE1, CE2, CM1, CM2) : pas de devoirs, seule la composition du trimestre compte. */
+const PRIMARY_RE = /(^|[^a-z])(CP|CE|CM)\s*[-_.]?\s*[12](?![0-9])/i;
+const plain = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+function isPrimary(c) {
+  if (!c) return false;
+  if (c.cycle === 'primaire') return true;
+  if (c.cycle === 'secondaire') return false;
+  return PRIMARY_RE.test(plain(c.name));
+}
+function termAvg(g, primary) {
+  if (!g) return null;
+  if (primary) return num(g.c);
+  const ds = [g.d1, g.d2].map(num).filter(x => x !== null);
+  const c = num(g.c), wd = +S.school.wDev || 0, wc = +S.school.wCompo || 0;
+  const dm = mean(ds);
+  if (dm !== null && c !== null && wd + wc > 0) return (dm * wd + c * wc) / (wd + wc);
+  return dm !== null ? dm : c;
+}
+function subjAvg(studentId, subjectId, term) {
+  const g = (S.grades[studentId] || {})[subjectId] || {};
+  const sub = S.subjects.find(x => x.id === subjectId), p = isPrimary(S.classes.find(c => c.id === (sub && sub.classId)));
+  if (term === 'A') return mean(['1', '2', '3'].map(t => termAvg(g[t], p)).filter(x => x !== null));
+  return termAvg(g[term], p);
+}
+function mention(avg) {
+  if (avg == null) return '';
+  if (avg >= 16) return 'Très bien';
+  if (avg >= 14) return 'Bien';
+  if (avg >= 12) return 'Assez bien';
+  if (avg >= 10) return 'Passable';
+  if (avg >= 8) return 'Insuffisant';
+  return 'Faible';
+}
+function classResults(classId, term) {
+  const subs = S.subjects.filter(s => s.classId === classId);
+  const studs = S.students.filter(s => s.classId === classId).sort((a, b) => (a.nom + a.prenom).localeCompare(b.nom + b.prenom, 'fr'));
+  const rows = studs.map(st => {
+    let tot = 0, coefs = 0;
+    const lines = subs.map(sub => {
+      const m = subjAvg(st.id, sub.id, term);
+      if (m !== null) { tot += m * sub.coef; coefs += +sub.coef; }
+      return { sub, m };
+    });
+    return { st, lines, tot, coefs, avg: coefs ? tot / coefs : null };
+  });
+  rows.forEach(r => {
+    r.rank = r.avg == null ? null : 1 + rows.filter(o => o.avg != null && r2(o.avg) > r2(r.avg)).length;
+  });
+  const avgs = rows.map(r => r.avg).filter(x => x !== null);
+  const subjMeans = {};
+  subs.forEach(sub => { subjMeans[sub.id] = mean(rows.map(r => r.lines.find(l => l.sub.id === sub.id).m).filter(x => x !== null)); });
+  return { subs, rows, classAvg: mean(avgs), max: avgs.length ? Math.max(...avgs) : null, min: avgs.length ? Math.min(...avgs) : null,
+    success: avgs.length ? avgs.filter(a => a >= 10).length / avgs.length : null, subjMeans };
+}
+
+/* ---------- Interface : outils ---------- */
+let toastT;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2400);
+}
+function openForm(title, fields, onSubmit) {
+  const d = $('#dlg');
+  d.innerHTML = `<form class="dform"><h3>${esc(title)}</h3>${fields.map(f => `<label>${esc(f.label)}${
+    f.type === 'select'
+      ? `<select name="${f.name}">${f.options.map(o => `<option value="${esc(o.v)}" ${String(o.v) === String(f.value) ? 'selected' : ''}>${esc(o.t)}</option>`).join('')}</select>`
+      : f.type === 'textarea'
+        ? `<textarea name="${f.name}" rows="4">${esc(f.value ?? '')}</textarea>`
+        : `<input name="${f.name}" type="${f.type || 'text'}" value="${esc(f.value ?? '')}" ${f.required ? 'required' : ''} ${f.step ? `step="${f.step}"` : ''} ${f.min != null ? `min="${f.min}"` : ''}>`
+  }</label>`).join('')}<div class="row end"><button type="button" class="ghost" data-a="closeDlg">Annuler</button><button class="primary">Enregistrer</button></div></form>`;
+  d.querySelector('form').onsubmit = e => { e.preventDefault(); onSubmit(Object.fromEntries(new FormData(e.target))); d.close(); };
+  d.showModal();
+  const first = d.querySelector('input,select,textarea'); if (first) first.focus();
+}
+const termLabel = t => t === 'A' ? 'Année complète' : `Trimestre ${t}`;
+const termSelect = (withAnnual) => `<label>Période<select data-bind="term">${['1', '2', '3'].concat(withAnnual ? ['A'] : []).map(t => `<option value="${t}" ${ui.term === t ? 'selected' : ''}>${termLabel(t)}</option>`).join('')}</select></label>`;
+const classSelect = () => `<label>Classe<select data-bind="classId">${S.classes.map(c => `<option value="${c.id}" ${ui.classId === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></label>`;
+const cls = c => (c == null ? 'n' : c < 10 ? 'n low' : 'n good');
+const ring = p => { const R = 34, C = 2 * Math.PI * R; return `<div class="ring"><svg viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="${R}" class="rg-bg"/><circle cx="40" cy="40" r="${R}" class="rg" style="--c:${C.toFixed(1)};stroke-dasharray:${C.toFixed(1)};stroke-dashoffset:${(C * (1 - (p || 0))).toFixed(1)}"/></svg><b>${p == null ? '–' : (p * 100).toFixed(0) + ' %'}</b></div>`; };
+const ICONS = {
+  dashboard: '<path d="M3 13h8V3H3zM13 21h8V11h-8zM13 3v6h8V3zM3 21h8v-6H3z"/>',
+  classes: '<path d="M3 21V8l9-5 9 5v13M9 21v-7h6v7"/>',
+  students: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M17 11a3 3 0 1 0 0-6M18 14c2.4.5 3.5 2.4 3.5 5"/>',
+  subjects: '<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 19V5M9 7h6"/>',
+  grades: '<path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4"/>',
+  bulletins: '<path d="M7 3h8l4 4v14H7zM15 3v4h4M10 12h6M10 16h6"/>',
+  settings: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>'
+};
+const reduceMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+function runCounters() {
+  if (reduceMotion) return;
+  document.querySelectorAll('[data-count]').forEach(el => {
+    const v = +el.dataset.count, dec = +el.dataset.dec || 0, t0 = performance.now(), D = 900;
+    const f = x => x.toFixed(dec).replace('.', ',');
+    const step = n => { const k = Math.min(1, (n - t0) / D); el.textContent = f(v * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
+}
+function updateClock() {
+  const txt = new Date().toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+  document.querySelectorAll('[data-clock]').forEach(e => { e.textContent = txt; });
+}
+function ensureClass() {
+  if (!S.classes.find(c => c.id === ui.classId)) ui.classId = S.classes[0]?.id || '';
+}
+function needClass(title) {
+  return `<div class="panel"><div class="empty"><strong>Commencez par créer une classe</strong>${esc(title)}<div class="row"><button class="primary" data-a="addClass">Ajouter une classe</button><button class="ghost" data-a="demo">Charger des données d’exemple</button></div></div></div>`;
+}
+
+/* ---------- Vues ---------- */
+const views = {
+  dashboard() {
+    ensureClass();
+    const t = ui.term;
+    const rows = S.classes.map(c => { const r = classResults(c.id, t); const top = r.rows.filter(x => x.rank === 1)[0]; return { c, r, top, n: r.rows.length }; });
+    const all = rows.flatMap(x => x.r.rows.filter(y => y.avg != null));
+    const global = mean(all.map(y => y.avg));
+    const pct = all.length ? all.filter(y => y.avg >= 10).length / all.length : null;
+    const weak = rows.flatMap(x => x.r.rows.filter(y => y.avg != null && y.avg < 8).map(y => ({ ...y, cn: x.c.name }))).sort((a, b) => a.avg - b.avg).slice(0, 8);
+    const hr = new Date().getHours(), hello = hr >= 5 && hr < 18 ? 'Bonjour' : 'Bonsoir';
+    const nGrades = Object.values(S.grades).reduce((n, g) => n + Object.values(g).reduce((m, sg) => m + Object.values(sg).reduce((k, tg) => k + ['d1', 'd2', 'c'].filter(f => num(tg[f]) !== null).length, 0), 0), 0);
+    const steps = [['Créer une classe', S.classes.length > 0, 'classes'], ['Définir les matières', S.subjects.length > 0, 'subjects'], ['Inscrire les élèves', S.students.length > 0, 'students'], ['Saisir des notes', nGrades > 0, 'grades'], ['Éditer les bulletins', all.length > 0, 'bulletins']];
+    const done = steps.filter(x => x[1]).length;
+    const buckets = [0, 0, 0, 0]; all.forEach(y => buckets[Math.min(3, Math.floor(y.avg / 5))]++);
+    const bmax = Math.max(1, ...buckets);
+    const cnt = (v, dec = 0) => v == null ? '–' : `<span data-count="${v}" data-dec="${dec}">${dec ? fmt(v) : v}</span>`;
+    return `<section class="hero">
+        <div class="hero-t"><span class="eyebrow" data-clock></span><h1>${hello}, ${esc(S.school.name)}</h1><p>Année scolaire ${esc(S.school.year)}. ${done === 5 ? 'Tout est en place : suivez vos résultats en temps réel.' : 'Suivez ces étapes pour préparer vos premiers bulletins.'}</p>
+          <div class="row"><button class="primary on-dark" data-a="nav" data-v="grades">Saisir des notes</button><button class="ghost on-dark" data-a="nav" data-v="bulletins">Éditer les bulletins</button></div></div>
+        <div class="hero-r"><div class="steps">${steps.map(([l, ok, v], i) => `<button class="step ${ok ? 'done' : ''}" data-a="nav" data-v="${v}" style="--i:${i}"><span class="tick"><svg viewBox="0 0 20 20"><path d="M5 10.5l3.2 3.2L15 6.8"/></svg></span>${l}</button>`).join('')}</div></div>
+      </section>
+      <div class="head"><h2>Vue d’ensemble — ${termLabel(t)}</h2><div class="bar">${termSelect(true)}</div></div>
+      <div class="stats">
+        <div class="stat hero-stat"><b>${cnt(global, 2)}</b><span>Moyenne générale de l’établissement</span></div>
+        <div class="stat"><b>${cnt(S.classes.length)}</b><span>Classes</span></div>
+        <div class="stat"><b>${cnt(S.students.length)}</b><span>Élèves</span></div>
+        <div class="stat ringstat">${ring(pct)}<span>Élèves ayant 10 ou plus</span></div>
+      </div>
+      ${S.classes.length ? `
+      <div class="grid2">
+        <div class="panel"><h2>Moyenne par classe</h2>
+          <div class="bars">${rows.map(x => `<div><span>${esc(x.c.name)}</span><span class="track"><i class="${x.r.classAvg != null && x.r.classAvg < 10 ? 'red' : ''}" style="width:${Math.min(100, (x.r.classAvg || 0) / 20 * 100)}%;display:block"></i></span><b>${fmt(x.r.classAvg)}</b></div>`).join('')}</div></div>
+        <div class="panel"><h2>Répartition des moyennes</h2>
+          <div class="bars">${['0 – 5', '5 – 10', '10 – 15', '15 – 20'].map((l, i) => `<div><span>${l}</span><span class="track"><i class="${i < 2 ? 'red' : ''}" style="width:${buckets[i] / bmax * 100}%;display:block"></i></span><b>${buckets[i]}</b></div>`).join('')}</div></div>
+      </div>
+      <div class="panel"><h2>Résultats par classe</h2><div class="scroll"><table>
+        <thead><tr><th>Classe</th><th class="n">Effectif</th><th class="n">Moyenne</th><th class="n">Taux de réussite</th><th>Premier(ère)</th></tr></thead>
+        <tbody>${rows.map(x => `<tr><td>${esc(x.c.name)}</td><td class="n">${x.n}</td><td class="${cls(x.r.classAvg)}">${fmt(x.r.classAvg)}</td><td class="n">${x.r.success == null ? '–' : Math.round(x.r.success * 100) + ' %'}</td><td>${x.top ? esc(x.top.st.nom + ' ' + x.top.st.prenom) + ' (' + fmt(x.top.avg) + ')' : '–'}</td></tr>`).join('')}</tbody></table></div></div>
+      <div class="panel"><h2>Élèves à suivre (moyenne sous 8)</h2>${weak.length ? `<div class="scroll"><table><thead><tr><th>Élève</th><th>Classe</th><th class="n">Moyenne</th></tr></thead><tbody>${weak.map(w => `<tr><td>${esc(w.st.nom + ' ' + w.st.prenom)}</td><td>${esc(w.cn)}</td><td class="n low">${fmt(w.avg)}</td></tr>`).join('')}</tbody></table></div>` : `<div class="empty">Aucun élève sous 8 sur cette période.</div>`}</div>`
+      : needClass('Créez ensuite les matières, ajoutez les élèves et saisissez les notes.')}`;
+  },
+
+  classes() {
+    return `<div class="head"><div><h1>Classes</h1><p>Chaque classe a ses propres matières, coefficients et élèves.</p></div><button class="primary" data-a="addClass">Ajouter une classe</button></div>
+    <div class="panel">${S.classes.length ? `<div class="scroll"><table><thead><tr><th>Nom</th><th>Cycle</th><th class="n">Élèves</th><th class="n">Matières</th><th></th></tr></thead><tbody>${S.classes.map(c => `<tr><td>${esc(c.name)}</td><td>${isPrimary(c) ? 'Primaire' : 'Secondaire'}</td><td class="n">${S.students.filter(s => s.classId === c.id).length}</td><td class="n">${S.subjects.filter(s => s.classId === c.id).length}</td><td class="acts"><button class="ghost mini" data-a="editClass" data-id="${c.id}">Modifier</button><button class="danger mini" data-a="delClass" data-id="${c.id}">Supprimer</button></td></tr>`).join('')}</tbody></table></div>` : `<div class="empty"><strong>Aucune classe</strong>Ajoutez votre première classe, par exemple « 6e A » ou « CM2 ».</div>`}</div>`;
+  },
+
+  students() {
+    ensureClass();
+    if (!S.classes.length) return `<div class="head"><h1>Élèves</h1></div>` + needClass('Une classe est nécessaire pour inscrire des élèves.');
+    const list = S.students.filter(s => s.classId === ui.classId).sort((a, b) => (a.nom + a.prenom).localeCompare(b.nom + b.prenom, 'fr'));
+    return `<div class="head"><div><h1>Élèves</h1><p>${list.length} élève(s) dans cette classe.</p></div>
+      <div class="bar">${classSelect()}<button class="ghost" data-a="importCsv">Importer un CSV</button><button class="primary" data-a="addStudent">Ajouter un élève</button></div></div>
+      <p class="hint">Format CSV : matricule ; nom ; prénom ; sexe (M ou F), une ligne par élève.</p>
+      <div class="panel">${list.length ? `<div class="scroll"><table><thead><tr><th>Matricule</th><th>Nom</th><th>Prénom</th><th>Sexe</th><th></th></tr></thead><tbody>${list.map(s => `<tr><td>${esc(s.matricule)}</td><td>${esc(s.nom)}</td><td>${esc(s.prenom)}</td><td>${esc(s.sexe)}</td><td class="acts"><button class="ghost mini" data-a="editStudent" data-id="${s.id}">Modifier</button><button class="danger mini" data-a="delStudent" data-id="${s.id}">Supprimer</button></td></tr>`).join('')}</tbody></table></div>` : `<div class="empty"><strong>Classe vide</strong>Ajoutez les élèves un par un ou importez un fichier CSV.</div>`}</div>`;
+  },
+
+  subjects() {
+    ensureClass();
+    if (!S.classes.length) return `<div class="head"><h1>Matières</h1></div>` + needClass('Une classe est nécessaire pour définir ses matières.');
+    const list = S.subjects.filter(s => s.classId === ui.classId);
+    return `<div class="head"><div><h1>Matières et coefficients</h1><p>Le coefficient pèse dans la moyenne générale.</p></div>
+      <div class="bar">${classSelect()}<button class="primary" data-a="addSubject">Ajouter une matière</button></div></div>
+      <div class="panel">${list.length ? `<div class="scroll"><table><thead><tr><th>Matière</th><th class="n">Coefficient</th><th></th></tr></thead><tbody>${list.map(s => `<tr><td>${esc(s.name)}</td><td class="n">${s.coef}</td><td class="acts"><button class="ghost mini" data-a="editSubject" data-id="${s.id}">Modifier</button><button class="danger mini" data-a="delSubject" data-id="${s.id}">Supprimer</button></td></tr>`).join('')}</tbody></table></div>` : `<div class="empty"><strong>Aucune matière</strong>Ajoutez les matières de cette classe avec leur coefficient.<div class="row"><button class="ghost" data-a="copySubjects">Copier depuis une autre classe</button></div></div>`}</div>`;
+  },
+
+  grades() {
+    ensureClass();
+    if (!S.classes.length) return `<div class="head"><h1>Notes</h1></div>` + needClass('Créez une classe, ses matières et ses élèves avant de saisir des notes.');
+    if (ui.term === 'A') ui.term = '1';
+    const subs = S.subjects.filter(s => s.classId === ui.classId);
+    if (!subs.find(s => s.id === ui.subjectId)) ui.subjectId = subs[0]?.id || '';
+    const studs = S.students.filter(s => s.classId === ui.classId).sort((a, b) => (a.nom + a.prenom).localeCompare(b.nom + b.prenom, 'fr'));
+    const head = `<div class="head"><div><h1>Saisie des notes</h1><p>Notes sur 20. L’enregistrement est automatique.</p></div>
+      <div class="bar">${classSelect()}${termSelect(false)}<label>Matière<select data-bind="subjectId">${subs.map(s => `<option value="${s.id}" ${ui.subjectId === s.id ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></label></div></div>`;
+    if (!subs.length || !studs.length) return head + `<div class="panel"><div class="empty"><strong>${!subs.length ? 'Cette classe n’a pas de matière' : 'Cette classe n’a pas d’élève'}</strong>Complétez-la avant de saisir des notes.</div></div>`;
+    const prim = isPrimary(S.classes.find(c => c.id === ui.classId));
+    const wd = +S.school.wDev, wc = +S.school.wCompo;
+    const inp = (st, g, k, label) => `<input class="grade ${num(g[k]) !== null && (num(g[k]) < 0 || num(g[k]) > 20) ? 'bad' : ''}" type="number" inputmode="decimal" min="0" max="20" step="0.25" value="${g[k] ?? ''}" data-g="${st.id}|${k}" aria-label="${esc(label + ' de ' + st.nom + ' ' + st.prenom)}">`;
+    if (prim) return head + `<div class="panel"><div class="scroll"><table><thead><tr><th>Élève</th><th class="n">Note de composition</th></tr></thead><tbody>${studs.map(st => {
+      const g = ((S.grades[st.id] || {})[ui.subjectId] || {})[ui.term] || {};
+      return `<tr><td>${esc(st.nom + ' ' + st.prenom)}</td><td class="n">${inp(st, g, 'c', 'Composition')}</td></tr>`;
+    }).join('')}</tbody></table></div></div>
+    <p class="hint">Classe du primaire : il n’y a pas de devoirs. Seule la note de composition de chaque trimestre est saisie, et elle devient la note de la matière.</p>`;
+    return head + `<div class="panel"><div class="scroll"><table><thead><tr><th>Élève</th><th class="n">Devoir 1</th><th class="n">Devoir 2</th><th class="n">Composition</th><th class="n">Moyenne</th></tr></thead><tbody>${studs.map(st => {
+      const g = ((S.grades[st.id] || {})[ui.subjectId] || {})[ui.term] || {};
+      const m = termAvg(g, false);
+      return `<tr><td>${esc(st.nom + ' ' + st.prenom)}</td><td class="n">${inp(st, g, 'd1', 'Devoir 1')}</td><td class="n">${inp(st, g, 'd2', 'Devoir 2')}</td><td class="n">${inp(st, g, 'c', 'Composition')}</td><td class="${cls(m)}" data-m="${st.id}">${fmt(m)}</td></tr>`;
+    }).join('')}</tbody></table></div></div>
+    <p class="hint">Moyenne de la matière = (moyenne des devoirs × ${wd} + composition × ${wc}) ÷ ${wd + wc}. Réglable dans Paramètres.</p>`;
+  },
+
+  bulletins() {
+    ensureClass();
+    if (!S.classes.length) return `<div class="head"><h1>Bulletins</h1></div>` + needClass('Les bulletins se calculent à partir des notes saisies.');
+    const R = classResults(ui.classId, ui.term);
+    if (ui.preview) {
+      const i = R.rows.findIndex(r => r.st.id === ui.preview);
+      if (i >= 0) {
+        const row = R.rows[i], prev = R.rows[i - 1], next = R.rows[i + 1];
+        return `<div class="head"><div><h1>Aperçu du bulletin</h1><p>${esc(row.st.nom + ' ' + row.st.prenom)} — ${termLabel(ui.term)}</p></div>
+          <div class="bar"><button class="ghost" data-a="closePreview">Retour au classement</button>${prev ? `<button class="ghost" data-a="preview" data-id="${prev.st.id}">Élève précédent</button>` : ''}${next ? `<button class="ghost" data-a="preview" data-id="${next.st.id}">Élève suivant</button>` : ''}<button class="ghost" data-a="comment" data-id="${row.st.id}">Observation</button><button class="primary" data-a="pdfOne" data-id="${row.st.id}">Télécharger le PDF</button><button class="ghost" data-a="printOne" data-id="${row.st.id}">Imprimer</button></div></div>
+          <div class="preview-wrap">${sheetHTML(R, row, termsFor())}</div>`;
+      }
+      ui.preview = '';
+    }
+    const head = `<div class="head"><div><h1>Bulletins et classement</h1><p>${R.rows.length} élève(s) — moyenne de classe ${fmt(R.classAvg)}.</p></div>
+      <div class="bar">${classSelect()}${termSelect(true)}<button class="primary" data-a="pdfAll">Télécharger tous (PDF)</button><button class="ghost" data-a="printAll">Imprimer tous</button><button class="ghost" data-a="csvResults">Résultats (CSV)</button></div></div>`;
+    if (!R.rows.length || !R.subs.length) return head + `<div class="panel"><div class="empty"><strong>Rien à calculer</strong>Ajoutez des matières et des élèves, puis saisissez des notes.</div></div>`;
+    const sorted = [...R.rows].sort((a, b) => (a.rank ?? 999) - (b.rank ?? 999));
+    return head + `<div class="stats">
+      <div class="stat hero"><b>${fmt(R.classAvg)}</b><span>Moyenne de la classe</span></div>
+      <div class="stat"><b>${fmt(R.max)}</b><span>Meilleure moyenne</span></div>
+      <div class="stat"><b>${fmt(R.min)}</b><span>Plus faible moyenne</span></div>
+      <div class="stat"><b>${R.success == null ? '–' : Math.round(R.success * 100) + ' %'}</b><span>Taux de réussite</span></div></div>
+    <div class="panel"><h2>Classement — ${termLabel(ui.term)}</h2><div class="scroll"><table><thead><tr><th class="n">Rang</th><th>Élève</th><th class="n">Moyenne</th><th>Mention</th><th></th></tr></thead><tbody>${sorted.map(r => `<tr><td class="n">${r.rank ?? '–'}</td><td>${esc(r.st.nom + ' ' + r.st.prenom)}</td><td class="${cls(r.avg)}">${fmt(r.avg)}</td><td>${r.avg == null ? '' : `<span class="pill ${r.avg >= 10 ? 'ok' : 'ko'}">${mention(r.avg)}</span>`}</td><td class="acts"><button class="ghost mini" data-a="comment" data-id="${r.st.id}">Observation</button><button class="primary mini" data-a="preview" data-id="${r.st.id}">Voir le bulletin</button><button class="ghost mini" data-a="pdfOne" data-id="${r.st.id}">PDF</button></td></tr>`).join('')}</tbody></table></div></div>`;
+  },
+
+  settings() {
+    const s = S.school;
+    return `<div class="head"><div><h1>Paramètres</h1><p>Établissement, mode de calcul et sauvegarde.</p></div></div>
+    <div class="panel"><h2>Établissement</h2><form class="set" data-form="settings">
+      <label>Nom de l’établissement<input name="name" value="${esc(s.name)}" required></label>
+      <label>Année scolaire<input name="year" value="${esc(s.year)}"></label>
+      <label>Ville<input name="city" value="${esc(s.city)}"></label>
+      <label>Chef d’établissement<input name="director" value="${esc(s.director)}"></label>
+      <label>Poids des devoirs (hors primaire)<input name="wDev" type="number" min="0" step="0.5" value="${s.wDev}"></label>
+      <label>Poids de la composition (hors primaire)<input name="wCompo" type="number" min="0" step="0.5" value="${s.wCompo}"></label>
+      <div class="full row end"><button class="primary">Enregistrer</button></div></form></div>
+    <div class="panel"><h2>Sauvegarde</h2><div class="set"><p class="hint full">Les données restent dans ce navigateur. Exportez régulièrement un fichier de sauvegarde, il permet aussi de passer d’un ordinateur à un autre.</p>
+      <div class="full row"><button class="ghost" data-a="exportJson">Exporter la sauvegarde</button><button class="ghost" data-a="importJson">Importer une sauvegarde</button><button class="ghost" data-a="demo">Charger des données d’exemple</button><button class="danger" data-a="reset">Tout effacer</button></div></div></div>`;
+  }
+};
+
+const NAV = [['dashboard', 'Tableau de bord'], ['classes', 'Classes'], ['students', 'Élèves'], ['subjects', 'Matières'], ['grades', 'Notes'], ['bulletins', 'Bulletins'], ['settings', 'Paramètres']];
+
+const $$ = (q, r = document) => Array.from(r.querySelectorAll(q));
+let lastKey = '';
+function render(fresh) {
+  $('#schoolName').textContent = S.school.name;
+  $('#nav').innerHTML = NAV.map(([k, t]) => `<button data-a="nav" data-v="${k}" ${ui.view === k ? 'aria-current="page"' : ''}><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>${t}</button>`).join('');
+  const m = $('#main');
+  m.innerHTML = views[ui.view]();
+  if (fresh) { m.classList.remove('enter'); void m.offsetWidth; m.classList.add('enter'); }
+  updateClock(); runCounters();
+}
+
+/* ---------- Bulletin imprimable ---------- */
+const termsFor = () => ui.term === 'A' ? { 1: classResults(ui.classId, '1'), 2: classResults(ui.classId, '2'), 3: classResults(ui.classId, '3') } : null;
+function sheetHTML(R, row, T) {
+  const s = S.school, annual = ui.term === 'A';
+  const c = S.classes.find(x => x.id === ui.classId);
+  const nt = v => fmt(num(v));
+  const prim = isPrimary(c);
+  const lines = row.lines.map(l => {
+    const g = (S.grades[row.st.id] || {})[l.sub.id] || {};
+    const cells = prim
+      ? (annual ? ['1', '2', '3'].map(t => `<td>${nt((g[t] || {}).c)}</td>`).join('') : `<td>${nt((g[ui.term] || {}).c)}</td>`)
+      : annual
+      ? ['1', '2', '3'].map(t => { const x = g[t] || {}, m = termAvg(g[t]); return `<td>${nt(x.d1)}</td><td>${nt(x.d2)}</td><td>${nt(x.c)}</td><td class="${m != null && m < 10 ? 'red' : ''}"><b>${fmt(m)}</b></td>`; }).join('')
+      : (() => { const t = g[ui.term] || {}; return `<td>${nt(t.d1)}</td><td>${nt(t.d2)}</td><td>${nt(t.c)}</td>`; })();
+    return `<tr><td class="l">${esc(l.sub.name)}</td>${cells}${prim && !annual ? '' : `<td class="${l.m != null && l.m < 10 ? 'red' : ''}"><b>${fmt(l.m)}</b></td>`}<td>${l.sub.coef}</td><td>${l.m == null ? '–' : fmt(l.m * l.sub.coef)}</td><td>${mention(l.m)}</td></tr>`;
+  }).join('');
+  const head = prim
+    ? (annual
+      ? `<tr><th>Matière</th><th>Compo. T1</th><th>Compo. T2</th><th>Compo. T3</th><th>Moy. annuelle</th><th>Coef.</th><th>Note × coef.</th><th>Appréciation</th></tr>`
+      : `<tr><th>Matière</th><th>Composition</th><th>Coef.</th><th>Note × coef.</th><th>Appréciation</th></tr>`)
+    : annual
+    ? `<tr><th rowspan="2">Matière</th><th colspan="4">Trimestre 1</th><th colspan="4">Trimestre 2</th><th colspan="4">Trimestre 3</th><th rowspan="2">Moy. annuelle</th><th rowspan="2">Coef.</th><th rowspan="2">Moy. × coef.</th><th rowspan="2">Appréciation</th></tr><tr>${'<th>Dev. 1</th><th>Dev. 2</th><th>Compo.</th><th>Moy.</th>'.repeat(3)}</tr>`
+    : `<tr><th>Matière</th><th>Dev. 1</th><th>Dev. 2</th><th>Compo.</th><th>Moy.</th><th>Coef.</th><th>Moy. × coef.</th><th>Appréciation</th></tr>`;
+  const rk = r => r == null ? '–' : r + (r === 1 ? 'er' : 'e');
+  const recap = annual ? `<h3 class="rt">Résultats par période</h3><table class="recap"><thead><tr><th></th><th>Moyenne générale</th><th>Rang</th><th>Moyenne de classe</th><th>Premier</th><th>Dernier</th><th>Mention</th></tr></thead><tbody>${
+    ['1', '2', '3'].map(t => { const Rt = T[t], rt = Rt.rows.find(x => x.st.id === row.st.id); return `<tr><td class="l">Trimestre ${t}</td><td class="${rt.avg != null && rt.avg < 10 ? 'red' : ''}"><b>${fmt(rt.avg)}</b></td><td>${rk(rt.rank)} / ${Rt.rows.length}</td><td>${fmt(Rt.classAvg)}</td><td>${fmt(Rt.max)}</td><td>${fmt(Rt.min)}</td><td>${mention(rt.avg)}</td></tr>`; }).join('')
+  }<tr class="total"><td class="l">Année complète</td><td class="${row.avg != null && row.avg < 10 ? 'red' : ''}">${fmt(row.avg)}</td><td>${rk(row.rank)} / ${R.rows.length}</td><td>${fmt(R.classAvg)}</td><td>${fmt(R.max)}</td><td>${fmt(R.min)}</td><td>${mention(row.avg)}</td></tr></tbody></table>`
+  : `<div class="sum"><div><b class="${row.avg != null && row.avg < 10 ? 'red' : ''}">${fmt(row.avg)}</b>Moyenne générale</div><div><b>${rk(row.rank)}</b>Rang sur ${R.rows.length}</div><div><b>${fmt(R.classAvg)}</b>Moyenne de classe</div><div><b>${mention(row.avg) || '–'}</b>Mention</div></div>
+    <div class="sum two"><div><b>${fmt(R.max)}</b>Moyenne du premier</div><div><b>${fmt(R.min)}</b>Moyenne du dernier</div></div>`;
+  const comment = S.comments[row.st.id + '|' + ui.term] || '';
+  return `<section class="sheet ${annual && !prim ? 'land' : ''}"><header><div><h1>${esc(s.name)}</h1><div class="meta">${esc(s.city)}</div></div><div class="meta" style="text-align:right">Année scolaire ${esc(s.year)}<br>Classe : ${esc(c?.name)}<br>Effectif : ${R.rows.length}</div></header>
+    <h2>Bulletin de notes — ${termLabel(ui.term)}</h2>
+    <div class="who"><div><b>Nom :</b> ${esc(row.st.nom)}</div><div><b>Prénom(s) :</b> ${esc(row.st.prenom)}</div><div><b>Matricule :</b> ${esc(row.st.matricule)}</div><div><b>Sexe :</b> ${esc(row.st.sexe)}</div></div>
+    <table class="notes"><thead>${head}</thead><tbody>${lines}
+    <tr class="total"><td colspan="${prim ? (annual ? 5 : 2) : (annual ? 14 : 5)}">Total</td><td>${row.coefs}</td><td>${fmt(row.tot)}</td><td></td></tr></tbody></table>
+    ${recap}
+    <div class="obs"><b>Observation du conseil de classe :</b><br>${esc(comment)}</div>
+    <div class="sign"><span>Le parent / tuteur</span><span>${esc(s.city)}${s.city ? ', le ' : 'Le '}${new Date().toLocaleDateString('fr-FR')}<br>Le chef d’établissement${s.director ? ' : ' + esc(s.director) : ''}</span></div></section>`;
+}
+function printSheets(ids) {
+  const R = classResults(ui.classId, ui.term), T = termsFor();
+  const rows = ids ? R.rows.filter(r => ids.includes(r.st.id)) : R.rows;
+  if (!rows.length) return toast('Aucun élève à imprimer.');
+  $('#print-area').innerHTML = rows.map(r => sheetHTML(R, r, T)).join('');
+  setTimeout(() => window.print(), 50);
+}
+
+/* ---------- Export : PDF et CSV ---------- */
+const LIBS = { h2c: 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', pdf: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js' };
+const loadScript = src => new Promise((ok, ko) => { const el = document.createElement('script'); el.src = src; el.onload = ok; el.onerror = () => ko(new Error('chargement')); document.head.appendChild(el); });
+async function ensurePdfLibs() {
+  if (!window.html2canvas) await loadScript(LIBS.h2c);
+  if (!(window.jspdf && window.jspdf.jsPDF)) await loadScript(LIBS.pdf);
+}
+const safe = t => String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w-]+/g, '_').replace(/^_+|_+$/g, '');
+async function saveFile(name, blob) {
+  try {
+    if (window.claude && window.claude.use) {
+      const d = await window.claude.use('downloads');
+      if (d) { await d.save({ filename: name, data: blob }); return true; }
+    }
+  } catch (e) { if (e && e.code === 'declined') return false; }
+  const a = document.createElement('a'); const u = URL.createObjectURL(blob);
+  a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(u), 3000);
+  return true;
+}
+async function exportPdf(ids) {
+  const R = classResults(ui.classId, ui.term), T = termsFor();
+  const rows = ids ? R.rows.filter(r => ids.includes(r.st.id)) : R.rows;
+  if (!rows.length) return toast('Aucun élève à exporter.');
+  const c = S.classes.find(x => x.id === ui.classId);
+  const box = $('#export-area'); let pdf = null;
+  try {
+    toast('Préparation du PDF…');
+    await ensurePdfLibs();
+    const { jsPDF } = window.jspdf;
+    for (let i = 0; i < rows.length; i++) {
+      if (rows.length > 1) toast(`Bulletin ${i + 1} sur ${rows.length}…`);
+      box.innerHTML = sheetHTML(R, rows[i], T);
+      const el = box.firstElementChild, land = el.classList.contains('land');
+      const W = land ? 297 : 210, H = land ? 210 : 297;
+      const canvas = await window.html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+      const ratio = canvas.height / canvas.width;
+      let iw = W, ih = W * ratio; if (ih > H) { ih = H; iw = H / ratio; }
+      if (!pdf) pdf = new jsPDF({ orientation: land ? 'l' : 'p', unit: 'mm', format: 'a4' }); else pdf.addPage('a4', land ? 'l' : 'p');
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', (W - iw) / 2, 0, iw, ih);
+    }
+    const name = rows.length === 1
+      ? `Bulletin_${safe(rows[0].st.nom + '_' + rows[0].st.prenom)}_${ui.term === 'A' ? 'Annee' : 'T' + ui.term}.pdf`
+      : `Bulletins_${safe(c?.name || 'classe')}_${ui.term === 'A' ? 'Annee' : 'T' + ui.term}.pdf`;
+    const ok = await saveFile(name, pdf.output('blob'));
+    if (ok) toast('PDF prêt.');
+  } catch (e) { toast('Export PDF impossible : vérifiez votre connexion et réessayez.'); }
+  finally { box.innerHTML = ''; }
+}
+function exportCsv() {
+  const R = classResults(ui.classId, ui.term), c = S.classes.find(x => x.id === ui.classId);
+  if (!R.rows.length) return toast('Aucun résultat à exporter.');
+  const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+  const f = x => x == null ? '' : String(r2(x)).replace('.', ',');
+  const head = ['Rang', 'Matricule', 'Nom', 'Prénom(s)', 'Sexe', ...R.subs.map(x => `${x.name} (coef ${x.coef})`), 'Total', 'Moyenne générale', 'Mention'];
+  const body = [...R.rows].sort((a, b) => (a.rank ?? 999) - (b.rank ?? 999)).map(r => [r.rank ?? '', r.st.matricule, r.st.nom, r.st.prenom, r.st.sexe, ...r.lines.map(l => f(l.m)), f(r.tot), f(r.avg), mention(r.avg)]);
+  const csv = '\uFEFF' + [head, ...body].map(r => r.map(q).join(';')).join('\r\n');
+  saveFile(`Resultats_${safe(c?.name || 'classe')}_${ui.term === 'A' ? 'Annee' : 'T' + ui.term}.csv`, new Blob([csv], { type: 'text/csv;charset=utf-8' })).then(ok => ok && toast('Fichier prêt.'));
+}
+
+
+/* ---------- Actions ---------- */
+const cycleField = v => ({ name: 'cycle', label: 'Cycle', type: 'select', value: v || 'auto', options: [
+  { v: 'auto', t: 'Automatique (CP1 à CM2 = primaire)' }, { v: 'primaire', t: 'Primaire : compositions seulement' }, { v: 'secondaire', t: 'Secondaire : devoirs et composition' }] });
+const A = {
+  nav: d => { ui.view = d.v; ui.preview = ''; render(true); window.scrollTo(0, 0); },
+  closeDlg: () => $('#dlg').close(),
+  preview: d => { ui.preview = d.id; render(); window.scrollTo(0, 0); },
+  closePreview: () => { ui.preview = ''; render(); },
+  addClass: () => openForm('Nouvelle classe', [{ name: 'name', label: 'Nom de la classe', required: true }, cycleField()], f => { const c = { id: uid(), name: f.name.trim(), cycle: f.cycle || 'auto' }; S.classes.push(c); ui.classId = c.id; save(); render(); toast('Classe ajoutée.'); }),
+  editClass: d => { const c = S.classes.find(x => x.id === d.id); openForm('Modifier la classe', [{ name: 'name', label: 'Nom', value: c.name, required: true }, cycleField(c.cycle)], f => { c.name = f.name.trim(); c.cycle = f.cycle || 'auto'; save(); render(); toast('Classe modifiée.'); }); },
+  delClass: d => { const c = S.classes.find(x => x.id === d.id); if (!confirm(`Supprimer « ${c.name} » avec ses élèves, matières et notes ?`)) return;
+    S.students.filter(s => s.classId === c.id).forEach(s => delete S.grades[s.id]);
+    S.students = S.students.filter(s => s.classId !== c.id); S.subjects = S.subjects.filter(s => s.classId !== c.id); S.classes = S.classes.filter(x => x.id !== c.id); save(); render(); },
+  addStudent: () => studentForm(),
+  editStudent: d => studentForm(S.students.find(s => s.id === d.id)),
+  delStudent: d => { const s = S.students.find(x => x.id === d.id); if (!confirm(`Supprimer ${s.nom} ${s.prenom} et ses notes ?`)) return; delete S.grades[s.id]; S.students = S.students.filter(x => x.id !== s.id); save(); render(); },
+  importCsv: () => $('#fileCsv').click(),
+  addSubject: () => subjectForm(),
+  editSubject: d => subjectForm(S.subjects.find(s => s.id === d.id)),
+  delSubject: d => { const s = S.subjects.find(x => x.id === d.id); if (!confirm(`Supprimer la matière « ${s.name} » et ses notes ?`)) return;
+    Object.values(S.grades).forEach(g => delete g[s.id]); S.subjects = S.subjects.filter(x => x.id !== s.id); save(); render(); },
+  copySubjects: () => {
+    const others = S.classes.filter(c => c.id !== ui.classId && S.subjects.some(s => s.classId === c.id));
+    if (!others.length) return toast('Aucune autre classe n’a de matières.');
+    openForm('Copier les matières', [{ name: 'from', label: 'Depuis la classe', type: 'select', options: others.map(c => ({ v: c.id, t: c.name })) }], f => {
+      S.subjects.filter(s => s.classId === f.from).forEach(s => S.subjects.push({ id: uid(), classId: ui.classId, name: s.name, coef: s.coef })); save(); render(); toast('Matières copiées.'); });
+  },
+  comment: d => { const st = S.students.find(s => s.id === d.id); const k = st.id + '|' + ui.term;
+    openForm(`Observation — ${st.nom} ${st.prenom}`, [{ name: 'c', label: 'Observation du conseil de classe', type: 'textarea', value: S.comments[k] || '' }], f => { S.comments[k] = f.c.trim(); save(); render(); toast('Observation enregistrée.'); }); },
+  printOne: d => printSheets([d.id]),
+  pdfOne: d => exportPdf([d.id]),
+  pdfAll: () => exportPdf(null),
+  csvResults: () => exportCsv(),
+  printAll: () => printSheets(null),
+  exportJson: () => saveFile(`klasora-sauvegarde-${new Date().toISOString().slice(0, 10)}.json`, new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' })),
+  importJson: () => $('#fileJson').click(),
+  reset: () => { if (!confirm('Effacer toutes les données de ce navigateur ? Cette action est définitive.')) return; S = defaults(); ui.classId = ''; save(); render(); toast('Données effacées.'); },
+  demo: () => {
+    if (S.classes.length && !confirm('Ajouter les données d’exemple aux données existantes ?')) return;
+    const noms = ['Ouédraogo', 'Sawadogo', 'Kaboré', 'Traoré', 'Zongo', 'Compaoré', 'Ilboudo', 'Sankara', 'Nikiéma', 'Tapsoba'];
+    const prenoms = ['Aminata', 'Issouf', 'Fatimata', 'Boureima', 'Salamata', 'Moussa', 'Awa', 'Abdoul', 'Mariam', 'Yacouba'];
+    const mats = [['Français', 4], ['Mathématiques', 4], ['Histoire-Géographie', 2], ['SVT', 2], ['Anglais', 2], ['EPS', 1]];
+    ['6e A', '5e B'].forEach((cn, ci) => {
+      const c = { id: uid(), name: cn }; S.classes.push(c);
+      const subs = mats.map(([name, coef]) => { const s = { id: uid(), classId: c.id, name, coef }; S.subjects.push(s); return s; });
+      noms.forEach((n, i) => {
+        const st = { id: uid(), classId: c.id, matricule: `${ci + 6}${String(i + 1).padStart(3, '0')}`, nom: n, prenom: prenoms[(i + ci * 3) % 10], sexe: i % 2 ? 'M' : 'F' };
+        S.students.push(st); S.grades[st.id] = {};
+        const level = 6 + Math.random() * 9;
+        subs.forEach(s => { S.grades[st.id][s.id] = {}; ['1', '2'].forEach(t => { const r = () => Math.max(0, Math.min(20, Math.round((level + (Math.random() * 8 - 4)) * 4) / 4)); S.grades[st.id][s.id][t] = { d1: r(), d2: r(), c: r() }; }); });
+      });
+      if (ci === 0) ui.classId = c.id;
+    });
+    const pm = [['Lecture', 3], ['Écriture', 2], ['Dictée et orthographe', 2], ['Calcul', 3], ['Éveil scientifique', 2], ['Histoire-Géographie', 1], ['Éducation civique et morale', 1]];
+    const cm = { id: uid(), name: 'CM2', cycle: 'auto' }; S.classes.push(cm);
+    const psubs = pm.map(([name, coef]) => { const x = { id: uid(), classId: cm.id, name, coef }; S.subjects.push(x); return x; });
+    noms.forEach((n, i) => {
+      const st = { id: uid(), classId: cm.id, matricule: `P${String(i + 1).padStart(3, '0')}`, nom: n, prenom: prenoms[(i + 5) % 10], sexe: i % 2 ? 'F' : 'M' };
+      S.students.push(st); S.grades[st.id] = {};
+      const level = 7 + Math.random() * 8;
+      psubs.forEach(x => { S.grades[st.id][x.id] = {}; ['1', '2'].forEach(t => { S.grades[st.id][x.id][t] = { c: Math.max(0, Math.min(20, Math.round((level + (Math.random() * 6 - 3)) * 4) / 4)) }; }); });
+    });
+    save(); render(); toast('Données d’exemple chargées.');
+  }
+};
+function studentForm(st) {
+  if (!S.classes.length) return;
+  openForm(st ? 'Modifier l’élève' : 'Nouvel élève', [
+    { name: 'matricule', label: 'Matricule', value: st?.matricule }, { name: 'nom', label: 'Nom', value: st?.nom, required: true },
+    { name: 'prenom', label: 'Prénom(s)', value: st?.prenom, required: true },
+    { name: 'sexe', label: 'Sexe', type: 'select', value: st?.sexe || 'F', options: [{ v: 'F', t: 'Féminin' }, { v: 'M', t: 'Masculin' }] }], f => {
+    const data = { matricule: f.matricule.trim(), nom: f.nom.trim().toUpperCase(), prenom: f.prenom.trim(), sexe: f.sexe };
+    if (st) Object.assign(st, data); else S.students.push({ id: uid(), classId: ui.classId, ...data });
+    save(); render(); toast(st ? 'Élève modifié.' : 'Élève ajouté.');
+  });
+}
+function subjectForm(sub) {
+  openForm(sub ? 'Modifier la matière' : 'Nouvelle matière', [
+    { name: 'name', label: 'Nom de la matière', value: sub?.name, required: true },
+    { name: 'coef', label: 'Coefficient', type: 'number', value: sub?.coef ?? 1, step: '0.5', min: 0.5, required: true }], f => {
+    const data = { name: f.name.trim(), coef: +f.coef };
+    if (sub) Object.assign(sub, data); else S.subjects.push({ id: uid(), classId: ui.classId, ...data });
+    save(); render();
+  });
+}
+
+/* ---------- Événements ---------- */
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-a]'); if (!b) return;
+  A[b.dataset.a]?.(b.dataset, b);
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.dataset.bind) { ui[t.dataset.bind] = t.value; if (t.dataset.bind === 'classId') ui.preview = ''; render(); }
+});
+let saveT;
+document.addEventListener('input', e => {
+  const t = e.target; if (!t.dataset.g) return;
+  const [sid, k] = t.dataset.g.split('|');
+  let v = t.value === '' ? '' : +t.value;
+  const bad = v !== '' && (v < 0 || v > 20 || isNaN(v));
+  t.classList.toggle('bad', bad);
+  if (bad) return;
+  const slot = ((S.grades[sid] ??= {})[ui.subjectId] ??= {})[ui.term] ??= {};
+  slot[k] = v;
+  const sub = S.subjects.find(x => x.id === ui.subjectId);
+  const m = termAvg(slot, isPrimary(S.classes.find(c => c.id === ((sub && sub.classId) || ui.classId)))), cell = $(`[data-m="${sid}"]`);
+  if (cell) { cell.textContent = fmt(m); cell.className = cls(m); }
+  clearTimeout(saveT); saveT = setTimeout(save, 300);
+});
+document.addEventListener('submit', e => {
+  if (e.target.dataset.form !== 'settings') return;
+  e.preventDefault();
+  const f = Object.fromEntries(new FormData(e.target));
+  Object.assign(S.school, { name: f.name.trim(), year: f.year.trim(), city: f.city.trim(), director: f.director.trim(), wDev: +f.wDev, wCompo: +f.wCompo });
+  save(); render(); toast('Paramètres enregistrés.');
+});
+$('#fileCsv').addEventListener('change', async e => {
+  const file = e.target.files[0]; e.target.value = ''; if (!file || !ui.classId) return;
+  const text = (await file.text()).replace(/^\uFEFF/, '');
+  let n = 0;
+  text.split(/\r?\n/).forEach(line => {
+    const p = line.split(/[;,\t]/).map(x => x.trim()); if (p.length < 3 || !p[1] || /^matricule$/i.test(p[0])) return;
+    S.students.push({ id: uid(), classId: ui.classId, matricule: p[0], nom: p[1].toUpperCase(), prenom: p[2], sexe: /^m/i.test(p[3] || '') ? 'M' : 'F' }); n++;
+  });
+  save(); render(); toast(n ? `${n} élève(s) importé(s).` : 'Aucune ligne valide dans ce fichier.');
+});
+$('#fileJson').addEventListener('change', async e => {
+  const file = e.target.files[0]; e.target.value = ''; if (!file) return;
+  try {
+    const d = JSON.parse(await file.text());
+    if (!Array.isArray(d.classes) || !Array.isArray(d.students)) throw 0;
+    if (!confirm('Remplacer les données actuelles par cette sauvegarde ?')) return;
+    S = Object.assign(defaults(), d); ui.classId = ''; save(); render(); toast('Sauvegarde importée.');
+  } catch { toast('Fichier de sauvegarde invalide.'); }
+});
+window.addEventListener('afterprint', () => { $('#print-area').innerHTML = ''; });
+
+/* ---------- Passerelle avec le module d'accès (auth.js) ---------- */
+window.KApp = {
+  onSave: null,
+  toast: m => toast(m),
+  data: () => S,
+  start(user, cloud) {
+    KEY = 'klasora-data-' + user.id;
+    let loc = null;
+    try { const r = localStorage.getItem(KEY); loc = r ? JSON.parse(r) : null; } catch {}
+    if (!loc && !(cloud && Object.keys(cloud).length)) {
+      try { const r = localStorage.getItem(LEGACY); if (r) { loc = JSON.parse(r); localStorage.removeItem(LEGACY); } } catch {}
+    }
+    S = Object.assign(defaults(), (cloud && Object.keys(cloud).length) ? cloud : (loc || {}));
+    ui = { view: 'dashboard', classId: '', term: '1', subjectId: '', preview: '' };
+    save();
+    document.body.classList.remove('locked');
+    render(true);
+  },
+  stop() {
+    S = defaults(); KEY = 'klasora-none';
+    document.body.classList.add('locked');
+    $('#main').innerHTML = '';
+  }
+};
+setInterval(updateClock, 15000);
+})();
+</script>
+<script>/* Klasora — accès : souscription / connexion / validation par l'administrateur / notifications.
+   Deux modes :
+   - LOCAL  (par défaut) : comptes stockés dans ce navigateur. Pratique pour tester, mais l'identité n'est PAS vérifiée.
+   - SUPABASE (js/config.js renseigné) : vraie connexion Google, GitHub et SMS, validation et notifications multi-appareils,
+     règles de sécurité appliquées côté serveur (voir supabase/schema.sql). */
+(() => {
+'use strict';
+
+const CFG = window.KLASORA_CONFIG || {};
+const REMOTE = !!(CFG.supabaseUrl && CFG.supabaseAnonKey);
+/* Empreinte PBKDF2 du mot de passe administrateur initial (le mot de passe lui-même n'est écrit nulle part). */
+const ADMIN_DEFAULT = { salt: 'ovdpaHvCsnQl4/O/wiS8lg==', hash: 'pBsUCmzVAHIVhfqVVp66siS2VQTlS2WB8ugJnr8TPms=', iter: 210000 };
+const ADMIN_IDLE_MS = 5 * 60 * 1000;
+
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const jget = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } };
+const jset = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+const err = (code, message, wait) => { const e = new Error(message); e.code = code; e.wait = wait || 0; return e; };
+const fmtDate = t => new Date(t).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+const initial = n => (String(n || '?').trim()[0] || '?').toUpperCase();
+const loadScript = src => new Promise((ok, ko) => { const el = document.createElement('script'); el.src = src; el.onload = ok; el.onerror = () => ko(new Error('chargement')); document.head.appendChild(el); });
+
+/* ---------- Icônes ---------- */
+const PATHS = {
+  shield: '<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  gmail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  github: '<path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/>',
+  phone: '<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  bell: '<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 21h4"/>',
+  logout: '<path d="M9 4H5v16h4M16 8l4 4-4 4M20 12H9"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  x: '<path d="M6 6l12 12M18 6L6 18"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>'
+};
+const ic = (n, s = 20) => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PATHS[n] || ''}</svg>`;
+
+/* ---------- Cryptographie (navigateur) ---------- */
+const enc = new TextEncoder();
+const b64 = buf => { let s = ''; new Uint8Array(buf).forEach(b => s += String.fromCharCode(b)); return btoa(s); };
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const randSalt = () => b64(crypto.getRandomValues(new Uint8Array(16)));
+async function pbkdf2(pw, saltB64, iter) {
+  if (!(window.crypto && crypto.subtle)) throw err('crypto', 'Ce navigateur ne permet pas le chiffrement. Ouvrez le site en HTTPS.');
+  const key = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveBits']);
+  return b64(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: unb64(saltB64), iterations: iter }, key, 256));
+}
+const timingEq = (a, b) => { if (a.length !== b.length) return false; let d = 0; for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i); return d === 0; };
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10));
+
+/* ---------- Validation ---------- */
+const normPhone = v => { let s = String(v).replace(/[\s().-]/g, ''); if (s.startsWith('00')) s = '+' + s.slice(2); return s; };
+const V = {
+  gmail: v => /^[a-z0-9](?:[a-z0-9.+_-]{0,62}[a-z0-9])?@(gmail|googlemail)\.com$/i.test(String(v).trim()),
+  github: v => /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(String(v).trim().replace(/^@/, '')),
+  phone: v => /^\+[1-9]\d{7,14}$/.test(normPhone(v))
+};
+const normId = (m, v) => m === 'gmail' ? String(v).trim().toLowerCase().replace('@googlemail.com', '@gmail.com') : m === 'github' ? String(v).trim().replace(/^@/, '').toLowerCase() : normPhone(v);
+const userPwOk = p => p.length >= 8 && /[A-Za-z]/.test(p) && /\d/.test(p);
+const adminPwOk = p => p.length >= 10 && /[a-z]/.test(p) && /[A-Z]/.test(p) && /\d/.test(p) && /[^A-Za-z0-9]/.test(p);
+function strength(p) {
+  if (!p) return 0;
+  let s = 0; if (p.length >= 8) s++; if (p.length >= 12) s++; if (/[a-z]/.test(p) && /[A-Z]/.test(p)) s++; if (/\d/.test(p)) s++; if (/[^A-Za-z0-9]/.test(p)) s++;
+  return Math.max(1, Math.min(4, s - 1));
+}
+const STRENGTH = ['', 'Faible', 'Moyen', 'Bon', 'Excellent'];
+
+const METHODS = {
+  gmail: { label: 'Gmail', field: 'Adresse Gmail', ph: 'prenom.nom@gmail.com', type: 'email', ac: 'email', hint: 'Une adresse se terminant par @gmail.com', provider: 'google' },
+  github: { label: 'GitHub', field: 'Nom d’utilisateur GitHub', ph: 'votre-nom-github', type: 'text', ac: 'username', hint: 'Lettres, chiffres et tirets (39 max.)', provider: 'github' },
+  phone: { label: 'Téléphone', field: 'Numéro de téléphone', ph: '+226 70 00 00 00', type: 'tel', ac: 'tel', hint: 'Format international, par ex. +22670000000' }
+};
+
+/* =====================================================================
+   Moteur LOCAL (démonstration, sans serveur)
+   ===================================================================== */
+const K = { users: 'klasora-users-v1', notifs: 'klasora-notifs-v1', admin: 'klasora-admin-v1', sess: 'klasora-session-v1', fails: 'klasora-fails-v1', log: 'klasora-adminlog-v1' };
+const pub = u => u ? { id: u.id, name: u.name, identifier: u.identifier, method: u.method, status: u.status, createdAt: u.createdAt } : null;
+function lockedFor(key) { const s = (jget(K.fails, {})[key]) || { n: 0, until: 0 }; return Math.max(0, s.until - Date.now()); }
+function addFail(key, max, lockMs) {
+  const f = jget(K.fails, {}); const s = f[key] || { n: 0, until: 0 };
+  if (s.until && s.until < Date.now()) { s.n = 0; s.until = 0; }
+  s.n++; if (s.n >= max) { s.until = Date.now() + lockMs; s.n = 0; }
+  f[key] = s; jset(K.fails, f); return s.until ? s.until - Date.now() : 0;
+}
+const clearFail = key => { const f = jget(K.fails, {}); delete f[key]; jset(K.fails, f); };
+const minutes = ms => Math.max(1, Math.ceil(ms / 60000));
+
+const Local = {
+  mode: 'local',
+  log(msg) { const l = jget(K.log, []); l.unshift({ at: Date.now(), msg }); jset(K.log, l.slice(0, 60)); },
+  push(userId, title, body) { const l = jget(K.notifs, []); l.unshift({ id: uuid(), userId, title, body, read: false, at: Date.now() }); jset(K.notifs, l.slice(0, 300)); },
+  async signUp({ method, identifier, name, password }) {
+    const users = jget(K.users, []); const id = normId(method, identifier);
+    if (users.some(u => u.method === method && u.identifier === id)) throw err('exists', 'Un compte existe déjà avec cet identifiant. Utilisez « Connexion ».');
+    const salt = randSalt(), iter = 150000, hash = await pbkdf2(password, salt, iter);
+    const u = { id: uuid(), method, identifier: id, name: name.trim(), salt, hash, iter, status: 'pending', createdAt: Date.now() };
+    users.push(u); jset(K.users, users);
+    Local.push(u.id, 'Souscription reçue', 'Votre demande est en attente de validation par l’administrateur.');
+    Local.log('Nouvelle souscription : ' + u.name + ' (' + METHODS[method].label + ')');
+    localStorage.setItem(K.sess, u.id);
+    return pub(u);
+  },
+  async signIn({ method, identifier, password }) {
+    const id = normId(method, identifier), key = 'u:' + method + ':' + id;
+    const wait = lockedFor(key);
+    if (wait > 0) throw err('locked', `Trop d’essais. Réessayez dans ${Math.ceil(wait / 1000)} s.`, wait);
+    const u = jget(K.users, []).find(x => x.method === method && x.identifier === id);
+    const calc = await pbkdf2(password, u ? u.salt : ADMIN_DEFAULT.salt, u ? u.iter : 150000);
+    if (!u || !timingEq(calc, u.hash)) {
+      const w = addFail(key, 5, 60000);
+      throw err(w ? 'locked' : 'invalid', w ? 'Trop d’essais. Compte bloqué 1 minute.' : 'Identifiant ou mot de passe incorrect.', w);
+    }
+    clearFail(key); localStorage.setItem(K.sess, u.id); return pub(u);
+  },
+  async session() { const id = localStorage.getItem(K.sess); return pub(jget(K.users, []).find(x => x.id === id)) || null; },
+  async signOut() { localStorage.removeItem(K.sess); },
+  async notifs() { const me = localStorage.getItem(K.sess); return jget(K.notifs, []).filter(n => n.userId === me).sort((a, b) => b.at - a.at).slice(0, 50); },
+  async markRead() { const me = localStorage.getItem(K.sess); jset(K.notifs, jget(K.notifs, []).map(n => n.userId === me ? { ...n, read: true } : n)); },
+  subscribe(userId, cb) {
+    const snap = () => JSON.stringify([jget(K.users, []).find(u => u.id === userId)?.status, jget(K.notifs, []).filter(n => n.userId === userId).length]);
+    let last = snap();
+    const check = () => { const s = snap(); if (s !== last) { last = s; cb(); } };
+    const iv = setInterval(check, 1500); const on = e => { if (!e.key || e.key.startsWith('klasora-')) check(); };
+    window.addEventListener('storage', on);
+    return () => { clearInterval(iv); window.removeEventListener('storage', on); };
+  },
+  async cloudLoad() { return null; },
+  async cloudSave() {},
+  /* --- administrateur --- */
+  async adminLogin(pw) {
+    const wait = lockedFor('admin');
+    if (wait > 0) throw err('locked', `Accès bloqué. Réessayez dans ${minutes(wait)} min.`, wait);
+    const rec = jget(K.admin, ADMIN_DEFAULT);
+    const calc = await pbkdf2(pw, rec.salt, rec.iter);
+    if (!timingEq(calc, rec.hash)) {
+      const w = addFail('admin', 5, 15 * 60000); Local.log('Échec de connexion administrateur');
+      throw err(w ? 'locked' : 'invalid', w ? `Trop d’essais. Accès bloqué ${minutes(w)} min.` : 'Mot de passe incorrect.', w);
+    }
+    clearFail('admin'); Local.log('Connexion administrateur'); return true;
+  },
+  async adminList(pw) { await Local.adminLogin(pw); return jget(K.users, []).map(pub).sort((a, b) => b.createdAt - a.createdAt); },
+  async adminSetStatus(pw, id, status) {
+    await Local.adminLogin(pw);
+    const users = jget(K.users, []); const u = users.find(x => x.id === id); if (!u) throw err('missing', 'Utilisateur introuvable.');
+    const was = u.status; u.status = status; jset(K.users, users);
+    if (status === 'approved') Local.push(id, 'Souscription validée', 'Bienvenue ! Votre accès à Klasora est activé.');
+    else if (was === 'approved') Local.push(id, 'Accès révoqué', 'L’administrateur a suspendu votre accès.');
+    else Local.push(id, 'Souscription refusée', 'L’administrateur n’a pas validé votre demande.');
+    Local.log(`${u.name} : ${was} → ${status}`);
+  },
+  async adminDelete(pw, id) {
+    await Local.adminLogin(pw);
+    const users = jget(K.users, []); const u = users.find(x => x.id === id);
+    jset(K.users, users.filter(x => x.id !== id)); jset(K.notifs, jget(K.notifs, []).filter(n => n.userId !== id));
+    try { localStorage.removeItem('klasora-data-' + id); } catch {}
+    Local.log('Compte supprimé : ' + (u ? u.name : id));
+  },
+  async adminChangePw(oldPw, newPw) {
+    await Local.adminLogin(oldPw);
+    if (!adminPwOk(newPw)) throw err('weak', 'Mot de passe trop faible.');
+    const salt = randSalt(), iter = 210000; jset(K.admin, { salt, iter, hash: await pbkdf2(newPw, salt, iter) });
+    Local.log('Mot de passe administrateur modifié');
+  },
+  adminLog() { return jget(K.log, []); }
+};
+
+/* =====================================================================
+   Moteur SUPABASE (vraie sécurité côté serveur)
+   ===================================================================== */
+let sb = null;
+const mapErr = e => {
+  const m = String((e && e.message) || e || '');
+  if (/provider is not enabled|Unsupported provider/i.test(m)) return 'Ce mode de connexion n’est pas encore activé dans Supabase.';
+  if (/sms|phone.*(disabled|not)|twilio/i.test(m)) return 'La connexion par téléphone n’est pas configurée (fournisseur SMS requis).';
+  if (/rate|too many|seconds/i.test(m)) return 'Trop de tentatives. Patientez un instant puis réessayez.';
+  if (/token|otp|expired|invalid/i.test(m)) return 'Code incorrect ou expiré.';
+  if (/network|fetch/i.test(m)) return 'Connexion impossible. Vérifiez votre réseau.';
+  return 'Une erreur est survenue. Réessayez.';
+};
+const toUser = p => ({ id: p.id, name: p.full_name || p.identifier, identifier: p.identifier, method: p.provider === 'google' ? 'gmail' : (p.provider === 'github' ? 'github' : 'phone'), status: p.status, createdAt: new Date(p.created_at).getTime() });
+async function rpc(name, args) {
+  const { data, error } = await sb.rpc(name, args);
+  if (error) throw err('net', mapErr(error));
+  if (!data || !data.ok) {
+    const c = data && data.error;
+    if (c === 'locked') throw err('locked', `Accès bloqué. Réessayez dans ${minutes((data.retry_after || 900) * 1000)} min.`, (data.retry_after || 900) * 1000);
+    if (c === 'invalid') throw err('invalid', 'Mot de passe incorrect.');
+    if (c === 'weak') throw err('weak', 'Mot de passe trop faible.');
+    throw err(c || 'net', 'Action refusée par le serveur.');
+  }
+  return data;
+}
+const Remote = {
+  mode: 'supabase',
+  async init() {
+    await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js');
+    sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+  },
+  async session() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return null;
+    for (let i = 0; i < 5; i++) {
+      const { data: p } = await sb.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
+      if (p) return toUser(p);
+      await sleep(600);
+    }
+    throw err('noprofile', 'Profil introuvable : le script supabase/schema.sql n’a pas été exécuté.');
+  },
+  async oauth(provider) {
+    const { error } = await sb.auth.signInWithOAuth({ provider, options: { redirectTo: location.origin + location.pathname } });
+    if (error) throw err('oauth', mapErr(error));
+  },
+  async sendOtp(phone) { const { error } = await sb.auth.signInWithOtp({ phone, options: { shouldCreateUser: true } }); if (error) throw err('otp', mapErr(error)); },
+  async verifyOtp(phone, token) { const { error } = await sb.auth.verifyOtp({ phone, token, type: 'sms' }); if (error) throw err('otp', mapErr(error)); },
+  async signOut() { await sb.auth.signOut(); },
+  async notifs() {
+    const { data } = await sb.from('notifications').select('*').order('created_at', { ascending: false }).limit(50);
+    return (data || []).map(n => ({ id: n.id, title: n.title, body: n.body, read: n.read, at: new Date(n.created_at).getTime() }));
+  },
+  async markRead() { await sb.from('notifications').update({ read: true }).eq('read', false); },
+  subscribe(userId, cb) {
+    const ch = sb.channel('klasora-' + userId)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: 'id=eq.' + userId }, () => cb())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: 'user_id=eq.' + userId }, () => cb())
+      .subscribe();
+    const iv = setInterval(cb, 12000);
+    return () => { clearInterval(iv); sb.removeChannel(ch); };
+  },
+  async cloudLoad() { const { data } = await sb.from('school_data').select('data').maybeSingle(); return data ? data.data : null; },
+  async cloudSave(d) {
+    const { data: { session } } = await sb.auth.getSession(); if (!session) return;
+    await sb.from('school_data').upsert({ user_id: session.user.id, data: d, updated_at: new Date().toISOString() });
+  },
+  async adminLogin(pw) { await rpc('admin_login', { p_password: pw }); return true; },
+  async adminList(pw) { const d = await rpc('admin_list_users', { p_password: pw }); return (d.users || []).map(toUser).sort((a, b) => b.createdAt - a.createdAt); },
+  async adminSetStatus(pw, id, status) { await rpc('admin_set_status', { p_password: pw, p_user: id, p_status: status }); },
+  async adminDelete(pw, id) { await rpc('admin_delete_user', { p_password: pw, p_user: id }); },
+  async adminChangePw(oldPw, newPw) { if (!adminPwOk(newPw)) throw err('weak', 'Mot de passe trop faible.'); await rpc('admin_change_password', { p_old: oldPw, p_new: newPw }); },
+  adminLog() { return []; }
+};
+const API = REMOTE ? Remote : Local;
+
+/* =====================================================================
+   Interface
+   ===================================================================== */
+let cur = null, unsub = null, notifs = [], seen = new Set(), firstNotifLoad = true;
+const st = { tab: 'login', method: 'gmail', step: 'form', phone: '', cool: 0 };
+const adm = { pw: null, tab: 'req', users: [], q: '', last: 0, poll: null, open: false };
+
+function mountUI() {
+  document.body.insertAdjacentHTML('beforeend', `
+  <section id="auth" class="k-auth" hidden></section>
+  <div id="ntoasts" class="k-ntoasts" aria-live="polite"></div>
+  <div id="notifPanel" class="k-notif k-glass" hidden></div>
+  <button id="adminFab" class="k-fab" type="button" aria-label="Espace administrateur" title="Espace administrateur">${ic('shield', 24)}<span id="fabBadge" class="k-fabbadge" hidden></span></button>
+  <div id="adminView" class="k-aview" hidden role="dialog" aria-modal="true" aria-labelledby="aTitle">
+    <div class="k-apanel k-glass">
+      <header class="k-ahead"><div class="k-ahead-t">${ic('shield', 26)}<div><h2 id="aTitle">Espace administrateur</h2><small>${REMOTE ? 'Connecté à Supabase' : 'Mode local (démonstration)'}</small></div></div>
+        <div class="row"><button class="ghost mini" data-adm="lock" id="aLock" hidden>${ic('lock', 16)} Verrouiller</button><button class="ghost mini" data-adm="close" aria-label="Fermer">${ic('x', 16)}</button></div></header>
+      <div id="aBody"></div>
+    </div>
+  </div>`);
+}
+
+/* ---------- Écran d'accès ---------- */
+let prevPos;
+function fresh() { const a = $('#auth'); a.classList.add('fresh'); clearTimeout(fresh.t); fresh.t = setTimeout(() => a.classList.remove('fresh'), 700); }
+const showAuth = () => { document.body.classList.add('locked'); const a = $('#auth'); a.hidden = false; fresh(); prevPos = undefined; renderAuth(); };
+const hideAuth = () => { $('#auth').hidden = true; };
+
+function renderAuth(flash) {
+  const m = METHODS[st.method];
+  const a = $('#auth');
+  a.innerHTML = `<div class="k-card k-glass">
+    <div class="k-brand"><span class="mark">K</span><div><strong>Klasora</strong><small>Gestion scolaire</small></div></div>
+    ${REMOTE ? '' : `<div class="k-mode">${ic('lock', 16)}<span><b>Mode local de démonstration.</b> Les comptes restent dans ce navigateur et l’identité n’est pas vérifiée. Connectez Supabase pour une vraie vérification.</span></div>`}
+    <div class="k-seg" role="tablist" data-pos="${st.tab === 'login' ? 0 : 1}"><i></i>
+      <button role="tab" aria-selected="${st.tab === 'login'}" data-tab="login" type="button">Connexion</button>
+      <button role="tab" aria-selected="${st.tab === 'signup'}" data-tab="signup" type="button">Souscription</button></div>
+    <p class="k-lead">${st.tab === 'login' ? 'Content de vous revoir. Choisissez comment vous connecter.' : 'Nouvel utilisateur ? Créez votre accès. L’administrateur validera votre demande.'}</p>
+    <div class="k-chips" role="radiogroup" aria-label="Méthode">${Object.entries(METHODS).map(([k, v]) => `<button type="button" role="radio" aria-checked="${st.method === k}" data-m="${k}" class="${st.method === k ? 'on' : ''}">${ic(k, 18)}<span>${v.label}</span></button>`).join('')}</div>
+    <div class="k-alert" id="authAlert" role="alert" ${flash ? '' : 'hidden'}>${esc(flash || '')}</div>
+    <div class="k-pane" id="authPane">${paneHTML(m)}</div>
+  </div>`;
+  const seg = a.querySelector('.k-seg'), pos = st.tab === 'login' ? 0 : 1;
+  if (prevPos !== undefined && prevPos !== pos) { seg.dataset.pos = prevPos; requestAnimationFrame(() => requestAnimationFrame(() => { seg.dataset.pos = pos; })); }
+  prevPos = pos;
+  const f = a.querySelector('input'); if (f && !flash) setTimeout(() => f.focus({ preventScroll: true }), 60);
+}
+function field(name, label, o = {}) {
+  return `<label class="k-field" data-f="${name}"><span>${label}</span><div class="k-in"><input name="${name}" type="${o.type || 'text'}" ${o.ph ? `placeholder="${esc(o.ph)}"` : ''} autocomplete="${o.ac || 'off'}" ${o.req === false ? '' : 'required'} ${o.inputmode ? `inputmode="${o.inputmode}"` : ''} spellcheck="false" autocapitalize="none">${o.eye ? '<button type="button" class="k-eye" data-eye aria-label="Afficher le mot de passe">Afficher</button>' : ''}</div><em class="k-hint">${esc(o.hint || '')}</em></label>`;
+}
+function paneHTML(m) {
+  const signup = st.tab === 'signup';
+  if (REMOTE) {
+    if (st.method === 'phone') {
+      if (st.step === 'otp') return `<form data-form="otp" novalidate><p class="k-lead small">Code envoyé au <b>${esc(st.phone)}</b></p>
+        <label class="k-field"><span>Code à 6 chiffres</span><input class="k-otp" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="••••••" required></label>
+        <button class="primary k-wide" type="submit">Valider le code</button>
+        <div class="k-row"><button type="button" class="k-link" data-act="resend" ${st.cool > 0 ? 'disabled' : ''}>${st.cool > 0 ? `Renvoyer le code (${st.cool}s)` : 'Renvoyer le code'}</button><button type="button" class="k-link" data-act="changephone">Changer de numéro</button></div></form>`;
+      return `<form data-form="phone" novalidate>${field('id', m.field, { type: 'tel', ph: m.ph, ac: 'tel', hint: m.hint, inputmode: 'tel' })}
+        <button class="primary k-wide" type="submit">Recevoir le code par SMS</button></form>`;
+    }
+    const who = st.method === 'gmail' ? 'Google' : 'GitHub';
+    return `<div class="k-oauth"><button class="primary k-wide" type="button" data-act="oauth">${ic(st.method, 20)} ${signup ? 'Souscrire' : 'Se connecter'} avec ${who}</button>
+      <p class="k-lead small">Vous serez redirigé vers ${who} pour confirmer votre identité, puis ramené ici.</p></div>`;
+  }
+  if (signup) return `<form data-form="signup" novalidate>
+    ${field('name', 'Nom complet', { ph: 'Prénom et nom', ac: 'name', hint: '2 caractères minimum' })}
+    ${field('id', m.field, { type: m.type, ph: m.ph, ac: m.ac, hint: m.hint, inputmode: st.method === 'phone' ? 'tel' : '' })}
+    ${field('pw', 'Mot de passe', { type: 'password', ac: 'new-password', hint: '8 caractères minimum, avec lettres et chiffres', eye: true })}
+    <div class="k-meter" aria-hidden="true"><i></i><i></i><i></i><i></i><span></span></div>
+    ${field('pw2', 'Confirmer le mot de passe', { type: 'password', ac: 'new-password', hint: '' })}
+    <button class="primary k-wide" type="submit">Envoyer ma souscription</button></form>`;
+  return `<form data-form="login" novalidate>
+    ${field('id', m.field, { type: m.type, ph: m.ph, ac: m.ac, hint: '', inputmode: st.method === 'phone' ? 'tel' : '' })}
+    ${field('pw', 'Mot de passe', { type: 'password', ac: 'current-password', hint: '', eye: true })}
+    <button class="primary k-wide" type="submit">Se connecter</button></form>`;
+}
+function authAlert(msg) {
+  const el = $('#authAlert'); if (!el) return;
+  if (!msg) { el.hidden = true; return; }
+  el.textContent = msg; el.hidden = false; el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+}
+function setFieldState(label, ok, msg) {
+  label.classList.toggle('ok', ok === true); label.classList.toggle('bad', ok === false);
+  const h = label.querySelector('.k-hint'); if (h && msg !== undefined) { if (!h.dataset.def) h.dataset.def = h.textContent; h.textContent = msg || h.dataset.def; }
+}
+function validateField(form, name) {
+  const lab = form.querySelector(`[data-f="${name}"]`); if (!lab) return true;
+  const v = lab.querySelector('input').value;
+  if (!v) { setFieldState(lab, null, ''); return false; }
+  let ok = true, msg = '';
+  if (name === 'id') { ok = V[st.method](v); msg = ok ? '' : (st.method === 'gmail' ? 'Adresse Gmail invalide' : st.method === 'github' ? 'Nom GitHub invalide' : 'Numéro invalide : commencez par + et l’indicatif'); }
+  if (name === 'name') { ok = v.trim().length >= 2; msg = ok ? '' : 'Entrez votre nom'; }
+  if (name === 'pw' && st.tab === 'signup') { ok = userPwOk(v); msg = ok ? '' : '8 caractères minimum, avec lettres et chiffres'; }
+  if (name === 'pw2') { ok = v === form.querySelector('[name=pw]').value; msg = ok ? '' : 'Les mots de passe diffèrent'; }
+  setFieldState(lab, ok, msg); return ok;
+}
+function setBusy(btn, on) { if (!btn) return; btn.classList.toggle('k-busy', on); btn.disabled = on; }
+
+async function onSubmit(form, ev) {
+  ev.preventDefault(); authAlert('');
+  const kind = form.dataset.form, btn = form.querySelector('button[type=submit]');
+  const val = n => (form.querySelector(`[name=${n}]`) || {}).value || '';
+  try {
+    if (kind === 'signup' || kind === 'login') {
+      const names = kind === 'signup' ? ['name', 'id', 'pw', 'pw2'] : ['id', 'pw'];
+      let bad = null; names.forEach(n => { const ok = n === 'pw' && kind === 'login' ? !!val('pw') : validateField(form, n); if (!ok && !bad) bad = n; });
+      if (bad) { form.querySelector(`[name=${bad}]`).focus(); authAlert('Vérifiez les champs signalés.'); return; }
+      setBusy(btn, true);
+      const u = kind === 'signup'
+        ? await API.signUp({ method: st.method, identifier: val('id'), name: val('name'), password: val('pw') })
+        : await API.signIn({ method: st.method, identifier: val('id'), password: val('pw') });
+      setBusy(btn, false); route(u, kind === 'signup' ? 'new' : null);
+    } else if (kind === 'phone') {
+      if (!validateField(form, 'id')) { authAlert('Entrez un numéro valide au format international.'); return; }
+      setBusy(btn, true); st.phone = normPhone(val('id'));
+      await API.sendOtp(st.phone); setBusy(btn, false); st.step = 'otp'; startCooldown(); sessionStorage.setItem('klasora-intent', st.tab); renderAuth();
+    } else if (kind === 'otp') {
+      const code = val('code').replace(/\D/g, ''); if (code.length !== 6) { authAlert('Entrez le code à 6 chiffres.'); return; }
+      setBusy(btn, true); await API.verifyOtp(st.phone, code);
+      const u = await API.session(); setBusy(btn, false); st.step = 'form'; route(u, intentFlash(u));
+    }
+  } catch (e) { setBusy(btn, false); authAlert(e.message || 'Une erreur est survenue.'); if (e.code === 'invalid') { const p = form.querySelector('[name=pw]'); if (p) { p.value = ''; p.focus(); } } }
+}
+function intentFlash(u) {
+  const intent = sessionStorage.getItem('klasora-intent'); sessionStorage.removeItem('klasora-intent');
+  const fresh = u && Date.now() - u.createdAt < 3 * 60 * 1000;
+  return fresh ? 'new' : (intent === 'signup' && u ? 'existing' : null);
+}
+function startCooldown() {
+  st.cool = 30; clearInterval(startCooldown.t);
+  startCooldown.t = setInterval(() => { st.cool--; if (st.cool <= 0) { clearInterval(startCooldown.t); st.cool = 0; } const b = $('[data-act=resend]'); if (b) { b.disabled = st.cool > 0; b.textContent = st.cool > 0 ? `Renvoyer le code (${st.cool}s)` : 'Renvoyer le code'; } }, 1000);
+}
+
+/* ---------- Écrans d'état ---------- */
+function showStatus(u, flash) {
+  document.body.classList.add('locked'); const a = $('#auth'); a.hidden = false; fresh();
+  const who = `<div class="k-who"><div class="ava">${esc(initial(u.name))}</div><div><b>${esc(u.name)}</b><small>${ic(u.method, 14)} ${esc(u.identifier)}</small></div></div>`;
+  let body;
+  if (u.status === 'rejected') body = `<div class="k-state bad">${ic('x', 34)}</div><h2>Accès non autorisé</h2><p class="k-lead">L’administrateur n’a pas validé votre souscription, ou a suspendu votre accès. Contactez-le pour en savoir plus.</p>`;
+  else if (u.status === 'approved') body = `<div class="k-state ok">${ic('check', 38)}</div><h2>Souscription validée</h2><p class="k-lead">Bienvenue, ${esc(u.name)} ! Ouverture de votre espace…</p>`;
+  else body = `<div class="k-state wait"><span class="k-pulse"></span>${ic('clock', 34)}</div><h2>${flash === 'new' ? 'Souscription envoyée' : 'En attente de validation'}</h2><p class="k-lead">L’administrateur doit valider votre accès. Vous recevrez une notification dès que ce sera fait. Cette page se met à jour automatiquement.</p>`;
+  a.innerHTML = `<div class="k-card k-glass k-center">${who}${body}<div class="k-actions">${u.status === 'pending' ? '<button class="ghost" data-act="refresh" type="button">Actualiser</button>' : ''}<button class="ghost" data-act="logout" type="button">${ic('logout', 16)} Se déconnecter</button></div></div>`;
+}
+
+async function route(u, flash) {
+  if (unsub) { unsub(); unsub = null; }
+  if (!u) { cur = null; notifs = []; seen = new Set(); firstNotifLoad = true; if (window.KApp) KApp.stop(); renderUserBox(); showAuth(); return; }
+  const was = cur && cur.id === u.id ? cur.status : null;
+  cur = u;
+  watch(u);
+  if (u.status === 'approved') {
+    if (was && was !== 'approved') { showStatus(u); await sleep(1500); }
+    if (!cur || cur.status !== 'approved') return;
+    await enter(u, flash);
+  } else { if (window.KApp && was === 'approved') KApp.stop(); showStatus(u, flash); loadNotifs(); }
+}
+function watch(u) {
+  unsub = API.subscribe(u.id, async () => {
+    try {
+      const f = await API.session();
+      if (!f) return route(null);
+      if (!cur || f.status !== cur.status || f.name !== cur.name) route(f); else loadNotifs();
+    } catch {}
+  });
+}
+async function enter(u, flash) {
+  let cloud = null;
+  if (REMOTE) { try { cloud = await API.cloudLoad(); } catch {} }
+  let t; KApp.onSave = REMOTE ? d => { clearTimeout(t); t = setTimeout(() => API.cloudSave(d).catch(() => {}), 1200); } : null;
+  KApp.start(u, cloud);
+  hideAuth(); renderUserBox(); loadNotifs();
+  if (flash === 'existing') KApp.toast('Vous aviez déjà un compte : connexion effectuée.');
+}
+
+/* ---------- Boîte utilisateur et notifications ---------- */
+function renderUserBox() {
+  const box = $('#userBox'); if (!box) return;
+  if (!cur || cur.status !== 'approved') { box.innerHTML = ''; return; }
+  const unread = notifs.filter(n => !n.read).length;
+  box.innerHTML = `<div class="k-ubox"><div class="ava">${esc(initial(cur.name))}</div><div class="k-uinfo"><b>${esc(cur.name)}</b><small>${esc(cur.identifier)}</small></div>
+    <button class="k-ibtn" data-act="bell" aria-label="Notifications${unread ? ` (${unread} non lues)` : ''}">${ic('bell', 20)}${unread ? `<span class="k-dot">${unread > 9 ? '9+' : unread}</span>` : ''}</button>
+    <button class="k-ibtn" data-act="logout" aria-label="Se déconnecter" title="Se déconnecter">${ic('logout', 20)}</button></div>`;
+}
+async function loadNotifs() {
+  if (!cur) return;
+  try {
+    const list = await API.notifs(); const fresh = list.filter(n => !seen.has(n.id) && !n.read);
+    list.forEach(n => seen.add(n.id)); notifs = list;
+    if (!firstNotifLoad) fresh.forEach(n => pushToast(n)); firstNotifLoad = false;
+    renderUserBox(); if (!$('#notifPanel').hidden) renderNotifPanel();
+  } catch {}
+}
+function pushToast(n) {
+  const el = document.createElement('div'); el.className = 'k-ntoast'; el.innerHTML = `<div class="k-nico">${ic('bell', 18)}</div><div><b>${esc(n.title)}</b><p>${esc(n.body)}</p></div>`;
+  $('#ntoasts').appendChild(el); setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 400); }, 6500);
+}
+function renderNotifPanel() {
+  const p = $('#notifPanel');
+  p.innerHTML = `<div class="k-nhead"><b>Notifications</b><button class="k-link" data-act="readall" type="button">Tout marquer comme lu</button></div>` +
+    (notifs.length ? `<ul>${notifs.map(n => `<li class="${n.read ? '' : 'unread'}"><b>${esc(n.title)}</b><p>${esc(n.body)}</p><small>${fmtDate(n.at)}</small></li>`).join('')}</ul>` : '<p class="k-empty">Aucune notification.</p>');
+}
+async function toggleBell() {
+  const p = $('#notifPanel'); p.hidden = !p.hidden;
+  if (!p.hidden) { renderNotifPanel(); }
+}
+async function readAll() { await API.markRead(); notifs = notifs.map(n => ({ ...n, read: true })); renderUserBox(); renderNotifPanel(); }
+async function logout() { try { await API.signOut(); } catch {} $('#notifPanel').hidden = true; st.step = 'form'; st.tab = 'login'; route(null); }
+
+/* ---------- Espace administrateur ---------- */
+const STATUS = { pending: ['En attente', ''], approved: ['Validé', 'ok'], rejected: ['Refusé', 'ko'] };
+function openAdmin() {
+  adm.open = true; $('#adminView').hidden = false; document.body.classList.add('k-noscroll'); touch(); renderAdmin();
+  startAdminTimers();
+}
+function closeAdmin() { adm.open = false; $('#adminView').hidden = true; document.body.classList.remove('k-noscroll'); $('#adminFab').focus(); }
+function lockAdmin(msg) {
+  adm.pw = null; adm.users = []; clearInterval(adm.poll); adm.poll = null; updateFab();
+  if (adm.open) renderAdmin(msg);
+}
+const touch = () => { adm.last = Date.now(); };
+function startAdminTimers() {
+  if (adm.idle) return;
+  adm.idle = setInterval(() => { if (adm.pw && Date.now() - adm.last > ADMIN_IDLE_MS) lockAdmin('Session verrouillée après 5 minutes d’inactivité.'); }, 10000);
+}
+function updateFab() {
+  const n = adm.pw ? adm.users.filter(u => u.status === 'pending').length : 0; const b = $('#fabBadge');
+  b.hidden = !n; b.textContent = n > 9 ? '9+' : n; $('#adminFab').classList.toggle('k-has', !!n);
+}
+function renderAdmin(flash) {
+  const body = $('#aBody'), lock = $('#aLock');
+  if (!adm.pw) {
+    lock.hidden = true;
+    body.innerHTML = `<form class="k-gate" data-aform="gate" autocomplete="off"><div class="k-state lockic">${ic('lock', 32)}</div><h3>Accès protégé</h3><p class="k-lead">Seul l’administrateur peut ouvrir cet espace. Saisissez le mot de passe.</p>
+      <label class="k-field"><span>Mot de passe administrateur</span><div class="k-in"><input name="pw" type="password" required autocomplete="current-password" spellcheck="false"><button type="button" class="k-eye" data-eye>Afficher</button></div></label>
+      <div class="k-alert" id="gateAlert" role="alert" ${flash ? '' : 'hidden'}>${esc(flash || '')}</div>
+      <button class="primary k-wide" type="submit">Déverrouiller</button></form>`;
+    setTimeout(() => { const i = body.querySelector('input'); if (i) i.focus(); }, 60); return;
+  }
+  lock.hidden = false;
+  const np = adm.users.filter(u => u.status === 'pending').length;
+  body.innerHTML = `<div class="k-atabs" role="tablist">
+      <button role="tab" data-adm="tab" data-t="req" aria-selected="${adm.tab === 'req'}">À valider${np ? ` <span class="k-cnt">${np}</span>` : ''}</button>
+      <button role="tab" data-adm="tab" data-t="usr" aria-selected="${adm.tab === 'usr'}">Utilisateurs <span class="k-cnt soft">${adm.users.length}</span></button>
+      <button role="tab" data-adm="tab" data-t="sec" aria-selected="${adm.tab === 'sec'}">Sécurité</button></div>
+    <div class="k-abody" id="aContent">${adm.tab === 'sec' ? secHTML() : (adm.tab === 'usr' ? `<input class="k-search" type="search" placeholder="Rechercher un nom, un e-mail, un numéro…" value="${esc(adm.q)}" data-asearch aria-label="Rechercher"><div id="aList"></div>` : '<div id="aList"></div>')}</div>`;
+  if (adm.tab !== 'sec') renderAdminList();
+}
+function urow(u, withDelete) {
+  const [lab, cls] = STATUS[u.status] || ['', ''];
+  const acts = u.status === 'pending' ? `<button class="primary mini" data-aact="approved">Valider</button><button class="danger mini" data-aact="rejected">Refuser</button>`
+    : u.status === 'approved' ? `<button class="danger mini" data-aact="rejected">Révoquer</button>` : `<button class="primary mini" data-aact="approved">Valider</button>`;
+  return `<div class="k-urow" data-id="${esc(u.id)}"><div class="ava sm">${esc(initial(u.name))}</div><div class="k-uinfo"><b>${esc(u.name)}</b><small>${ic(u.method, 14)} ${esc(u.identifier)} · ${fmtDate(u.createdAt)}</small></div>
+    <span class="pill ${cls}">${lab}</span><div class="k-uact">${acts}${withDelete ? `<button class="ghost mini" data-aact="delete">Supprimer</button>` : ''}</div></div>`;
+}
+function renderAdminList() {
+  const el = $('#aList'); if (!el) return;
+  updateFab();
+  if (adm.tab === 'req') {
+    const l = adm.users.filter(u => u.status === 'pending');
+    el.innerHTML = l.length ? l.map(u => urow(u, false)).join('') : `<div class="k-empty">${ic('check', 28)}<p>Aucune souscription en attente.</p></div>`;
+  } else {
+    const q = adm.q.trim().toLowerCase();
+    const l = adm.users.filter(u => !q || (u.name + ' ' + u.identifier).toLowerCase().includes(q));
+    el.innerHTML = l.length ? l.map(u => urow(u, true)).join('') : `<div class="k-empty"><p>Aucun utilisateur.</p></div>`;
+  }
+  const tabs = $('#aBody .k-atabs'); if (tabs) {
+    const np = adm.users.filter(u => u.status === 'pending').length;
+    tabs.children[0].innerHTML = `À valider${np ? ` <span class="k-cnt">${np}</span>` : ''}`;
+    tabs.children[1].innerHTML = `Utilisateurs <span class="k-cnt soft">${adm.users.length}</span>`;
+  }
+}
+function secHTML() {
+  const log = API.adminLog();
+  return `<form class="k-secform" data-aform="pw" autocomplete="off"><h3>Changer le mot de passe</h3>
+    ${field('old', 'Mot de passe actuel', { type: 'password', ac: 'current-password', eye: true })}
+    ${field('nw', 'Nouveau mot de passe', { type: 'password', ac: 'new-password', hint: '10 caractères min. : majuscule, minuscule, chiffre et symbole', eye: true })}
+    <div class="k-meter" aria-hidden="true"><i></i><i></i><i></i><i></i><span></span></div>
+    ${field('nw2', 'Confirmer le nouveau mot de passe', { type: 'password', ac: 'new-password' })}
+    <div class="k-alert" id="pwAlert" role="alert" hidden></div>
+    <button class="primary" type="submit">Enregistrer le nouveau mot de passe</button></form>
+    <div class="k-secinfo"><h3>Protection</h3><ul><li>Verrouillage après 5 essais incorrects (15 min).</li><li>Verrouillage automatique après 5 min d’inactivité.</li><li>Le mot de passe n’est jamais enregistré en clair.</li></ul></div>
+    ${log.length ? `<div class="k-secinfo"><h3>Journal</h3><ul class="k-log">${log.slice(0, 12).map(l => `<li><small>${fmtDate(l.at)}</small> ${esc(l.msg)}</li>`).join('')}</ul></div>` : ''}`;
+}
+async function loadUsers(silent) {
+  if (!adm.pw) return;
+  try { adm.users = await API.adminList(adm.pw); }
+  catch (e) { if (e.code === 'invalid' || e.code === 'locked') return lockAdmin(e.message); if (!silent) KApp.toast(e.message); return; }
+  if (adm.open && adm.pw) { if (adm.tab === 'sec') { updateFab(); } else renderAdminList(); } else updateFab();
+}
+async function adminGate(form, ev) {
+  ev.preventDefault();
+  const input = form.querySelector('input[name=pw]'), btn = form.querySelector('button[type=submit]'), al = $('#gateAlert');
+  const pw = input.value; if (!pw) return;
+  setBusy(btn, true); al.hidden = true;
+  try {
+    await API.adminLogin(pw); adm.pw = pw; adm.tab = 'req'; touch(); await loadUsers(true);
+    clearInterval(adm.poll); adm.poll = setInterval(() => { if (adm.pw) loadUsers(true); }, REMOTE ? 15000 : 2500);
+    renderAdmin();
+  } catch (e) {
+    setBusy(btn, false); input.value = ''; input.focus();
+    al.textContent = e.message || 'Accès refusé.'; al.hidden = false; al.classList.remove('shake'); void al.offsetWidth; al.classList.add('shake');
+  }
+}
+async function adminDecide(id, action, btn) {
+  if (action === 'delete' && !confirm('Supprimer définitivement ce compte et ses données ?')) return;
+  setBusy(btn, true);
+  try {
+    if (action === 'delete') await API.adminDelete(adm.pw, id); else await API.adminSetStatus(adm.pw, id, action);
+    await loadUsers(true);
+    KApp.toast(action === 'approved' ? 'Souscription validée. L’utilisateur est notifié.' : action === 'rejected' ? 'Accès refusé. L’utilisateur est notifié.' : 'Compte supprimé.');
+  } catch (e) { setBusy(btn, false); if (e.code === 'invalid' || e.code === 'locked') lockAdmin(e.message); else KApp.toast(e.message); }
+}
+async function adminChangePw(form, ev) {
+  ev.preventDefault();
+  const v = n => form.querySelector(`[name=${n}]`).value, al = $('#pwAlert'), btn = form.querySelector('button[type=submit]');
+  const fail = m => { al.textContent = m; al.hidden = false; al.classList.remove('shake'); void al.offsetWidth; al.classList.add('shake'); };
+  al.hidden = true;
+  if (!v('old')) return fail('Saisissez le mot de passe actuel.');
+  if (!adminPwOk(v('nw'))) return fail('Nouveau mot de passe trop faible : 10 caractères min., avec majuscule, minuscule, chiffre et symbole.');
+  if (v('nw') !== v('nw2')) return fail('La confirmation ne correspond pas.');
+  if (v('nw') === v('old')) return fail('Le nouveau mot de passe doit être différent de l’ancien.');
+  setBusy(btn, true);
+  try { await API.adminChangePw(v('old'), v('nw')); adm.pw = v('nw'); touch(); setBusy(btn, false); form.reset(); KApp.toast('Mot de passe administrateur modifié.'); renderAdmin(); }
+  catch (e) { setBusy(btn, false); fail(e.message || 'Échec de la modification.'); }
+}
+
+/* ---------- Événements ---------- */
+function bind() {
+  document.addEventListener('click', async e => {
+    const t = e.target;
+    const eye = t.closest('[data-eye]');
+    if (eye) { const i = eye.parentElement.querySelector('input'); const show = i.type === 'password'; i.type = show ? 'text' : 'password'; eye.textContent = show ? 'Masquer' : 'Afficher'; return; }
+    if (t.closest('#adminFab')) return openAdmin();
+    const ad = t.closest('[data-adm]');
+    if (ad) {
+      touch(); const k = ad.dataset.adm;
+      if (k === 'close') closeAdmin();
+      else if (k === 'lock') lockAdmin();
+      else if (k === 'tab') { adm.tab = ad.dataset.t; renderAdmin(); }
+      return;
+    }
+    if (t.id === 'adminView') return closeAdmin();
+    const aa = t.closest('[data-aact]');
+    if (aa) { touch(); return adminDecide(aa.closest('.k-urow').dataset.id, aa.dataset.aact, aa); }
+    const tab = t.closest('[data-tab]');
+    if (tab && $('#auth').contains(tab)) { st.tab = tab.dataset.tab; st.step = 'form'; renderAuth(); return; }
+    const mm = t.closest('[data-m]');
+    if (mm && $('#auth').contains(mm)) { st.method = mm.dataset.m; st.step = 'form'; renderAuth(); return; }
+    const act = t.closest('[data-act]');
+    if (act) {
+      const k = act.dataset.act;
+      if (k === 'logout') return logout();
+      if (k === 'bell') return toggleBell();
+      if (k === 'readall') return readAll();
+      if (k === 'refresh') { setBusy(act, true); try { const f = await API.session(); setBusy(act, false); if (f && f.status !== cur.status) route(f); else if (!f) route(null); else KApp.toast('Toujours en attente de validation.'); } catch { setBusy(act, false); } return; }
+      if (k === 'oauth') { setBusy(act, true); try { sessionStorage.setItem('klasora-intent', st.tab); await API.oauth(METHODS[st.method].provider); } catch (er) { setBusy(act, false); authAlert(er.message); } return; }
+      if (k === 'changephone') { st.step = 'form'; renderAuth(); return; }
+      if (k === 'resend') { try { await API.sendOtp(st.phone); startCooldown(); KApp.toast('Nouveau code envoyé.'); renderAuth(); } catch (er) { authAlert(er.message); } return; }
+    }
+    if (!t.closest('#notifPanel')) $('#notifPanel').hidden = true;
+  });
+  document.addEventListener('submit', e => {
+    const f = e.target;
+    if (f.dataset.form) return onSubmit(f, e);
+    if (f.dataset.aform === 'gate') return adminGate(f, e);
+    if (f.dataset.aform === 'pw') return adminChangePw(f, e);
+  });
+  document.addEventListener('input', e => {
+    const i = e.target; touch();
+    if (i.dataset && i.dataset.asearch !== undefined) { adm.q = i.value; renderAdminList(); return; }
+    const form = i.closest('form'); if (!form) return;
+    if (form.dataset.form === 'otp' && i.name === 'code') { i.value = i.value.replace(/\D/g, '').slice(0, 6); if (i.value.length === 6) form.requestSubmit(); return; }
+    if (form.dataset.form === 'signup' || form.dataset.form === 'login' || form.dataset.form === 'phone') {
+      if (i.name === 'pw' && form.dataset.form === 'signup') { const m = form.querySelector('.k-meter'); const s = strength(i.value); m.dataset.s = s; m.querySelector('span').textContent = STRENGTH[s]; }
+      clearTimeout(i._t); i._t = setTimeout(() => { if (form.dataset.form === 'login' && i.name === 'pw') return; validateField(form, i.name); if (i.name === 'pw' && form.dataset.form === 'signup' && form.querySelector('[name=pw2]').value) validateField(form, 'pw2'); }, 250);
+      const al = $('#authAlert'); if (al) al.hidden = true;
+    }
+    if (form.dataset.aform === 'pw' && i.name === 'nw') { const m = form.querySelector('.k-meter'); const s = strength(i.value); m.dataset.s = s; m.querySelector('span').textContent = STRENGTH[s]; }
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (adm.open) closeAdmin(); else $('#notifPanel').hidden = true; } touch(); });
+}
+
+/* ---------- Démarrage ---------- */
+async function boot() {
+  mountUI(); bind();
+  const box = $('#userBox'); if (!box) { const s = $('.side-note'); if (s) s.insertAdjacentHTML('beforebegin', '<div id="userBox"></div>'); }
+  try { if (REMOTE) await Remote.init(); }
+  catch { document.body.classList.add('locked'); const a = $('#auth'); a.hidden = false; a.innerHTML = '<div class="k-card k-glass k-center"><div class="k-state bad">' + ic('x', 34) + '</div><h2>Connexion impossible</h2><p class="k-lead">Le service d’authentification est injoignable. Vérifiez votre connexion et rechargez la page.</p></div>'; return; }
+  let u = null;
+  try { u = await API.session(); } catch (e) { document.body.classList.add('locked'); const a = $('#auth'); a.hidden = false; a.innerHTML = `<div class="k-card k-glass k-center"><div class="k-state bad">${ic('x', 34)}</div><h2>Configuration incomplète</h2><p class="k-lead">${esc(e.message)}</p></div>`; return; }
+  route(u, u ? intentFlash(u) : null);
+}
+window.KAuth = { _test: { Local, V, normId, normPhone, strength, adminPwOk, userPwOk, pbkdf2, ADMIN_DEFAULT } };
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
 </body>
 </html>
