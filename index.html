@@ -1116,42 +1116,23 @@ const Local = {
   async cloudLoad() { return null; },
   async cloudSave() {},
   /* --- administrateur --- */
-  async adminLogin(pw) {
-    const wait = lockedFor('admin');
-    if (wait > 0) throw err('locked', `Accès bloqué. Réessayez dans ${minutes(wait)} min.`, wait);
-    const rec = jget(K.admin, ADMIN_DEFAULT);
-    const calc = await pbkdf2(pw, rec.salt, rec.iter);
-    if (!timingEq(calc, rec.hash)) {
-      const w = addFail('admin', 5, 15 * 60000); Local.log('Échec de connexion administrateur');
-      throw err(w ? 'locked' : 'invalid', w ? `Trop d’essais. Accès bloqué ${minutes(w)} min.` : 'Mot de passe incorrect.', w);
-    }
-    clearFail('admin'); Local.log('Connexion administrateur'); return true;
-  },
-  async adminList(pw) { await Local.adminLogin(pw); return jget(K.users, []).map(pub).sort((a, b) => b.createdAt - a.createdAt); },
-  async adminSetStatus(pw, id, status) {
-    await Local.adminLogin(pw);
-    const users = jget(K.users, []); const u = users.find(x => x.id === id); if (!u) throw err('missing', 'Utilisateur introuvable.');
-    const was = u.status; u.status = status; jset(K.users, users);
-    if (status === 'approved') Local.push(id, 'Souscription validée', 'Bienvenue ! Votre accès à Klasora est activé.');
-    else if (was === 'approved') Local.push(id, 'Accès révoqué', 'L’administrateur a suspendu votre accès.');
-    else Local.push(id, 'Souscription refusée', 'L’administrateur n’a pas validé votre demande.');
-    Local.log(`${u.name} : ${was} → ${status}`);
-  },
-  async adminDelete(pw, id) {
-    await Local.adminLogin(pw);
-    const users = jget(K.users, []); const u = users.find(x => x.id === id);
-    jset(K.users, users.filter(x => x.id !== id)); jset(K.notifs, jget(K.notifs, []).filter(n => n.userId !== id));
-    try { localStorage.removeItem('klasora-data-' + id); } catch {}
-    Local.log('Compte supprimé : ' + (u ? u.name : id));
-  },
-  async adminChangePw(oldPw, newPw) {
-    await Local.adminLogin(oldPw);
-    if (!adminPwOk(newPw)) throw err('weak', 'Mot de passe trop faible.');
-    const salt = randSalt(), iter = 210000; jset(K.admin, { salt, iter, hash: await pbkdf2(newPw, salt, iter) });
-    Local.log('Mot de passe administrateur modifié');
-  },
-  adminLog() { return jget(K.log, []); }
-};
+  async adminLogin() {
+  await rpc('klasora_admin_check');
+  return true;
+},
+async adminList() {
+  const d = await rpc('admin_list_users');
+  return (d.users || []).map(toUser).sort((a, b) => b.createdAt - a.createdAt);
+},
+async adminSetStatus(pw, id, status) {
+  await rpc('admin_set_user_status', { p_user: id, p_status: status });
+},
+async adminDelete(pw, id) {
+  await rpc('admin_delete_user', { p_user: id });
+},
+adminLog() {
+  return [];
+  }
 
 /* =====================================================================
    Moteur SUPABASE (vraie sécurité côté serveur)
